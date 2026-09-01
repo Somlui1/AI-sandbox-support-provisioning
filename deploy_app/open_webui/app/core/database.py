@@ -38,6 +38,27 @@ def run_migrations():
     except Exception:
         pass
 
+    # Create sandbox_requests table for persistent portal requests
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS sandbox_requests (
+            id TEXT PRIMARY KEY,
+            username TEXT NOT NULL,
+            full_name TEXT NOT NULL,
+            employee_id TEXT,
+            department TEXT,
+            email TEXT NOT NULL,
+            approver TEXT,
+            project_name TEXT NOT NULL,
+            short_description TEXT,
+            target_audience TEXT,
+            app_type TEXT,
+            status TEXT NOT NULL DEFAULT 'pending',
+            deployed_job_uuid TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -137,3 +158,104 @@ def add_job_step(job_uuid: str, step_name: str, step_status: str, detail: Option
     conn.commit()
     conn.close()
     return steps
+
+def save_sandbox_request(req: Dict[str, Any]) -> Dict[str, Any]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    req_id = req.get("id") or f"req-{int(time.time()*1000)%100000:05d}"
+    
+    cursor.execute("""
+        INSERT OR REPLACE INTO sandbox_requests (
+            id, username, full_name, employee_id, department, email, approver,
+            project_name, short_description, target_audience, app_type,
+            status, deployed_job_uuid, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        req_id,
+        req.get("username", "user"),
+        req.get("fullName") or req.get("full_name") or "User",
+        req.get("employeeId") or req.get("employee_id") or "",
+        req.get("department", ""),
+        req.get("email", ""),
+        req.get("approver", ""),
+        req.get("projectName") or req.get("project_name") or "Sandbox",
+        req.get("shortDescription") or req.get("short_description") or "",
+        req.get("targetAudience") or req.get("target_audience") or "",
+        req.get("appType") or req.get("app_type") or "other",
+        req.get("status", "pending"),
+        req.get("deployed_job_uuid"),
+        req.get("created_at") or now_iso,
+        now_iso
+    ))
+    conn.commit()
+    conn.close()
+    return get_sandbox_request(req_id)
+
+def get_sandbox_request(req_id: str) -> Optional[Dict[str, Any]]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM sandbox_requests WHERE id = ?", (req_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        r = dict(row)
+        return {
+            "id": r["id"],
+            "username": r["username"],
+            "fullName": r["full_name"],
+            "employeeId": r["employee_id"],
+            "department": r["department"],
+            "email": r["email"],
+            "approver": r["approver"],
+            "projectName": r["project_name"],
+            "shortDescription": r["short_description"],
+            "targetAudience": r["target_audience"],
+            "appType": r["app_type"],
+            "status": r["status"],
+            "deployed_job_uuid": r["deployed_job_uuid"],
+            "created_at": r["created_at"],
+            "updated_at": r["updated_at"]
+        }
+    return None
+
+def get_all_sandbox_requests() -> List[Dict[str, Any]]:
+    run_migrations()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM sandbox_requests ORDER BY created_at DESC")
+    rows = cursor.fetchall()
+    conn.close()
+    results = []
+    for row in rows:
+        r = dict(row)
+        results.append({
+            "id": r["id"],
+            "username": r["username"],
+            "fullName": r["full_name"],
+            "employeeId": r["employee_id"],
+            "department": r["department"],
+            "email": r["email"],
+            "approver": r["approver"],
+            "projectName": r["project_name"],
+            "shortDescription": r["short_description"],
+            "targetAudience": r["target_audience"],
+            "appType": r["app_type"],
+            "status": r["status"],
+            "deployed_job_uuid": r["deployed_job_uuid"],
+            "created_at": r["created_at"],
+            "updated_at": r["updated_at"]
+        })
+    return results
+
+def update_sandbox_request_status(req_id: str, status: str, deployed_job_uuid: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if deployed_job_uuid:
+        cursor.execute("UPDATE sandbox_requests SET status = ?, deployed_job_uuid = ?, updated_at = ? WHERE id = ?", (status, deployed_job_uuid, now_iso, req_id))
+    else:
+        cursor.execute("UPDATE sandbox_requests SET status = ?, updated_at = ? WHERE id = ?", (status, now_iso, req_id))
+    conn.commit()
+    conn.close()
+    return get_sandbox_request(req_id)
