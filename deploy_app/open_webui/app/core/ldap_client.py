@@ -77,11 +77,16 @@ class LDAPClient:
             "department",
             "title",
             "telephoneNumber",
+            "employeeID",
+            "employeeNumber",
+            "manager",
+            "description"
         ]
 
         results = []
         try:
-            server = Server(self.host, port=self.port, get_info=ALL, connect_timeout=5)
+            # Fast connection with 1.5s timeout to prevent web UI latency
+            server = Server(self.host, port=self.port, get_info=None, connect_timeout=1.5)
             
             # Bind anonymously or with bind credentials if specified
             if self.bind_user and self.bind_password:
@@ -90,10 +95,10 @@ class LDAPClient:
                     user=self.bind_user,
                     password=self.bind_password,
                     auto_bind=True,
-                    receive_timeout=10,
+                    receive_timeout=8,
                 )
             else:
-                conn = Connection(server, auto_bind=True, receive_timeout=10)
+                conn = Connection(server, auto_bind=True, receive_timeout=8)
 
             conn.search(
                 search_base=self.base_dn,
@@ -103,6 +108,7 @@ class LDAPClient:
                 size_limit=limit,
             )
 
+            import re
             for entry in conn.entries:
                 username = str(getattr(entry, "sAMAccountName", "") or "")
                 display_name = str(getattr(entry, "displayName", "") or getattr(entry, "cn", "") or username)
@@ -110,6 +116,14 @@ class LDAPClient:
                 upn = str(getattr(entry, "userPrincipalName", "") or "")
                 department = str(getattr(entry, "department", "") or "")
                 title = str(getattr(entry, "title", "") or "")
+                emp_id = str(getattr(entry, "employeeID", "") or getattr(entry, "employeeNumber", "") or "")
+                
+                mgr_dn = str(getattr(entry, "manager", "") or "")
+                approver = ""
+                if mgr_dn:
+                    m = re.search(r'CN=([^,]+)', mgr_dn, re.IGNORECASE)
+                    if m:
+                        approver = m.group(1).strip()
 
                 if not username:
                     continue
@@ -121,9 +135,12 @@ class LDAPClient:
                     "username": username,
                     "sAMAccountName": username,
                     "name": display_name,
+                    "fullName": display_name,
                     "email": standard_email,
                     "department": department,
                     "title": title,
+                    "employeeId": emp_id,
+                    "approver": approver,
                     "source": "ldap"
                 })
 
@@ -134,6 +151,22 @@ class LDAPClient:
             raise RuntimeError(f"LDAP query failed: {str(e)}")
 
         return results
+
+    def get_user_by_username(self, username: str) -> Optional[Dict[str, Any]]:
+        """Search LDAP for exact sAMAccountName match or prefix match."""
+        clean = (username or "").strip().lower()
+        if "@" in clean:
+            clean = clean.split("@")[0]
+        try:
+            users = self.search_users(clean, limit=5)
+            for u in users:
+                if (u.get("username") or "").lower() == clean or (u.get("sAMAccountName") or "").lower() == clean:
+                    return u
+            if users:
+                return users[0]
+        except Exception as e:
+            print(f"[WARNING] LDAP get_user_by_username error: {e}")
+        return None
 
 
 def sync_ldap_user_to_openwebui(

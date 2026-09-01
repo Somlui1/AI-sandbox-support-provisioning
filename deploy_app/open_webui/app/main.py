@@ -643,7 +643,7 @@ async def job_events(request):
 # -------------------------------------------------------------------------
 
 async def ldap_login_api(request):
-    """Authenticate user with Active Directory LDAP or local directory and return user profile."""
+    """Authenticate employee credentials via LDAP and return authentic directory attributes."""
     try:
         body = await request.json()
         raw_username = body.get("username", "").strip()
@@ -658,81 +658,72 @@ async def ldap_login_api(request):
         if "@" in clean_user:
             clean_user = clean_user.split("@")[0]
 
-        ldap_profile = None
+        ldap_client = LDAPClient()
+        ldap_user = None
 
-        # 1. Try real LDAP Active Directory bind authentication
-        if LDAP_HOST:
+        # 1. Query Active Directory for user details using service account
+        try:
+            ldap_user = ldap_client.get_user_by_username(clean_user)
+        except Exception as query_err:
+            print(f"[AUTH] LDAP lookup warning: {query_err}")
+
+        # 2. Authenticate employee password against Active Directory if LDAP is online
+        if ldap_user and LDAP_HOST:
             try:
-                from ldap3 import Server, Connection, ALL, SUBTREE
-                server = Server(LDAP_HOST, port=LDAP_PORT, connect_timeout=3)
+                from ldap3 import Server, Connection
+                server = Server(LDAP_HOST, port=LDAP_PORT, get_info=None, connect_timeout=1.5)
                 user_bind_dn = f"{clean_user}@{domain}"
-                
-                # Check user credentials directly against LDAP
-                conn = Connection(server, user=user_bind_dn, password=password, auto_bind=True, receive_timeout=4)
-                if conn.bound:
-                    search_filter = f"(&(objectClass=user)(sAMAccountName={clean_user}))"
-                    conn.search(
-                        search_base=LDAP_BASE_DN or f"DC={domain.replace('.', ',DC=')}",
-                        search_filter=search_filter,
-                        search_scope=SUBTREE,
-                        attributes=["displayName", "cn", "mail", "department", "title", "employeeID", "employeeNumber", "manager"]
-                    )
-                    if conn.entries:
-                        entry = conn.entries[0]
-                        mgr_dn = str(getattr(entry, "manager", "") or "")
-                        mgr_name = "Department Manager (VP of IT)"
-                        if mgr_dn:
-                            m_match = re.search(r'CN=([^,]+)', mgr_dn, re.IGNORECASE)
-                            if m_match:
-                                mgr_name = m_match.group(1).strip()
+                user_conn = Connection(server, user=user_bind_dn, password=password, receive_timeout=4)
+                if not user_conn.bind():
+                    return JSONResponse({"detail": "Invalid Active Directory username or password."}, status_code=401)
+                user_conn.unbind()
+            except Exception as bind_err:
+                print(f"[AUTH] Direct user bind notice: {bind_err}")
 
-                        ldap_profile = {
-                            "username": clean_user,
-                            "fullName": str(getattr(entry, "displayName", "") or getattr(entry, "cn", "") or clean_user),
-                            "email": str(getattr(entry, "mail", "") or f"{clean_user}@{domain}").lower(),
-                            "department": str(getattr(entry, "department", "") or "Digital Innovation"),
-                            "employeeId": str(getattr(entry, "employeeID", "") or getattr(entry, "employeeNumber", "") or f"EMP-{clean_user.upper()}"),
-                            "approver": mgr_name,
-                            "title": str(getattr(entry, "title", "") or ""),
-                        }
-                    conn.unbind()
-            except Exception as ldap_err:
-                print(f"[AUTH] LDAP bind notice: {ldap_err}")
-
-        # 2. Resilient Directory Fallback: Match against Open WebUI directory if LDAP is unreachable
-        if not ldap_profile:
+        # 3. Check Open WebUI user directory if LDAP is offline or user not found in AD
+        if not ldap_user:
             owu_profile = None
             try:
                 client = get_client(request)
-                users = client.get_users()
-                for u in users:
-                    u_email = (u.get("email") or "").lower()
-                    u_user = (u.get("username") or u.get("name") or "").lower()
-                    if u_email == f"{clean_user}@{domain}".lower() or u_user == clean_user:
-                        owu_profile = u
-                        break
+                resp = requests.get(f"{client.base_url}/api/v1/users/", headers=client.headers, timeout=1.5)
+                if resp.ok:
+                    users_data = resp.json()
+                    users = users_data.get("data", []) if isinstance(users_data, dict) else users_data
+                    for u in users:
+                        u_email = (u.get("email") or "").lower()
+                        u_user = (u.get("username") or u.get("name") or "").lower()
+                        if u_email == f"{clean_user}@{domain}".lower() or u_user == clean_user:
+                            owu_profile = u
+                            break
             except Exception:
                 pass
 
-            display_name = clean_user.capitalize()
-            if owu_profile and owu_profile.get("name"):
-                display_name = owu_profile.get("name")
-            elif "." in clean_user:
-                display_name = " ".join(part.capitalize() for part in clean_user.split("."))
+            display_name = owu_profile.get("name") if (owu_profile and owu_profile.get("name")) else clean_user.replace(".", " ").title()
+            user_email = owu_profile.get("email") if (owu_profile and owu_profile.get("email")) else f"{clean_user}@{domain}".lower()
 
-            ldap_profile = {
+            ldap_user = {
                 "username": clean_user,
                 "fullName": display_name,
-                "email": f"{clean_user}@{domain}".lower(),
-                "department": "Digital Innovation",
-                "employeeId": f"A-{abs(hash(clean_user)) % 90000 + 10000}",
-                "approver": "Wichai Manager (VP of IT)",
+                "email": user_email,
+                "department": "",
+                "employeeId": "",
+                "approver": "",
             }
+
+        final_profile = {
+            "username": ldap_user.get("username") or clean_user,
+            "fullName": ldap_user.get("fullName") or ldap_user.get("name") or clean_user,
+            "email": ldap_user.get("email") or f"{clean_user}@{domain}".lower(),
+            "department": ldap_user.get("department") or "",
+            "employeeId": ldap_user.get("employeeId") or "",
+            "approver": ldap_user.get("approver") or "",
+            "title": ldap_user.get("title") or "",
+        }
 
         session_token = f"ldap-sess-{uuid.uuid4().hex[:16]}"
         return JSONResponse({
             "status": "success",
-            "user": ldap_profile,
+            "user": final_profile,
             "token": session_token
         })
     except Exception as e:

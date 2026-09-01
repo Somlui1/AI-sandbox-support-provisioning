@@ -442,11 +442,41 @@
             document.getElementById('displayDepartment').innerText = user.department || 'AAPICO';
 
             // LDAP auto-filled fields
-            document.getElementById('fieldFullName').value     = user.fullName   || '';
-            document.getElementById('fieldEmployeeId').value  = user.employeeId || '';
-            document.getElementById('fieldDepartment').value  = user.department  || '';
-            document.getElementById('fieldEmail').value       = user.email       || '';
-            document.getElementById('fieldApprover').value    = user.approver    || 'Wichai Manager (VP of IT)';
+            document.getElementById('fieldFullName').value = user.fullName || '';
+            document.getElementById('fieldEmail').value    = user.email || '';
+
+            const empInput = document.getElementById('fieldEmployeeId');
+            empInput.value = user.employeeId || '';
+            if (!user.employeeId) {
+                empInput.disabled = false;
+                empInput.classList.remove('input-disabled');
+                empInput.placeholder = 'Enter Employee ID';
+            } else {
+                empInput.disabled = true;
+                empInput.classList.add('input-disabled');
+            }
+
+            const deptInput = document.getElementById('fieldDepartment');
+            deptInput.value = user.department || '';
+            if (!user.department) {
+                deptInput.disabled = false;
+                deptInput.classList.remove('input-disabled');
+                deptInput.placeholder = 'Enter Department';
+            } else {
+                deptInput.disabled = true;
+                deptInput.classList.add('input-disabled');
+            }
+
+            const apprvInput = document.getElementById('fieldApprover');
+            apprvInput.value = user.approver || '';
+            if (!user.approver) {
+                apprvInput.disabled = false;
+                apprvInput.classList.remove('input-disabled');
+                apprvInput.placeholder = 'Enter Approver / Manager name';
+            } else {
+                apprvInput.disabled = true;
+                apprvInput.classList.add('input-disabled');
+            }
         }
 
         function transitionTo(view) {
@@ -523,11 +553,11 @@
             try {
                 const payload = {
                     username:         currentUser.username,
-                    fullName:         currentUser.fullName,
-                    employeeId:       currentUser.employeeId,
-                    department:       currentUser.department,
-                    email:            currentUser.email,
-                    approver:         currentUser.approver,
+                    fullName:         document.getElementById('fieldFullName').value.trim() || currentUser.fullName || currentUser.username,
+                    employeeId:       document.getElementById('fieldEmployeeId').value.trim() || currentUser.employeeId || '',
+                    department:       document.getElementById('fieldDepartment').value.trim() || currentUser.department || '',
+                    email:            document.getElementById('fieldEmail').value.trim() || currentUser.email,
+                    approver:         document.getElementById('fieldApprover').value.trim() || currentUser.approver || '',
                     projectName:      projName,
                     shortDescription: projDesc,
                     targetAudience:   projAudience,
