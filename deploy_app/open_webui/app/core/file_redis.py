@@ -5,8 +5,12 @@ import time
 class FileRedis:
     def __init__(self, directory=None):
         if directory is None:
-            directory = os.path.dirname(os.path.abspath(__file__))
-        self.directory = os.path.join(directory, "file_redis_store")
+            # Default to deploy_app/open_webui/app/data/file_redis_store
+            base_app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            data_dir = os.path.join(base_app_dir, "data")
+            self.directory = os.path.join(data_dir, "file_redis_store")
+        else:
+            self.directory = os.path.join(directory, "file_redis_store") if not directory.endswith("file_redis_store") else directory
         os.makedirs(self.directory, exist_ok=True)
 
     def _get_path(self, key):

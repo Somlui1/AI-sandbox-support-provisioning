@@ -23,9 +23,14 @@ from config import (
     LDAP_DOMAIN,
 )
 
-# SQLite Database path
+# Application paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SQLITE_DB_PATH = os.getenv("SQLITE_DB_PATH", os.path.join(BASE_DIR, "jobs.db"))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+os.makedirs(DATA_DIR, exist_ok=True)
+
+# SQLite Database path
+SQLITE_DB_PATH = os.getenv("SQLITE_DB_PATH", os.path.join(DATA_DIR, "jobs.db"))
 
 # Redis Configuration
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
@@ -40,6 +45,6 @@ def get_redis_client():
         return client
     except Exception as e:
         # Import dynamically to avoid circular dependencies
-        from open_webui.app.file_redis import FileRedis
-        return FileRedis()
+        from open_webui.app.core.file_redis import FileRedis
+        return FileRedis(directory=os.path.join(DATA_DIR, "file_redis_store"))
 

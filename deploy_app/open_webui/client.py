@@ -19,6 +19,10 @@ class OpenWebUIClient:
             "Accept": "application/json"
         }
 
+    @property
+    def api_token(self) -> str:
+        return self.token
+
     def _request(self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None, files: Optional[Dict[str, Any]] = None, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Helper to send HTTP requests to Open WebUI with Postman-style logging and HTML validation."""
         url = f"{self.base_url}/{endpoint.lstrip('/')}"

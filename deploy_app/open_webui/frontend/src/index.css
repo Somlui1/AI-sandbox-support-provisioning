@@ -1,0 +1,178 @@
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #F8FAFC;
+  color: #0F172A;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Clean SaaS Card System */
+.saas-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.saas-card-subtle {
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+}
+
+/* Input Controls */
+.input-dark, .saas-input {
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
+  border-radius: 10px;
+  transition: all 0.15s ease;
+}
+
+.input-dark:focus, .saas-input:focus {
+  outline: none;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* Button System */
+.btn-primary {
+  background-color: #0F172A;
+  color: #FFFFFF;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.12);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #1E293B;
+  box-shadow: 0 2px 4px 0 rgba(15, 23, 42, 0.16);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.btn-primary:disabled {
+  background-color: #E2E8F0;
+  color: #94A3B8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  color: #334155;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+.btn-secondary:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.btn-secondary:active {
+  transform: scale(0.99);
+}
+
+/* Calm, Eye-Friendly Dark Mode Overrides */
+html.dark body {
+  background-color: #0B0F19;
+  color: #F8FAFC;
+}
+
+html.dark .saas-card {
+  background-color: #131B2A;
+  border-color: #212D42;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+}
+
+html.dark .saas-card-subtle {
+  background-color: #0E1522;
+  border-color: #212D42;
+}
+
+html.dark .saas-input, html.dark .input-dark {
+  background-color: #0E1522;
+  border-color: #25334A;
+  color: #F8FAFC;
+}
+
+html.dark .saas-input:focus, html.dark .input-dark:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+html.dark .btn-primary {
+  background-color: #3B82F6;
+  color: #FFFFFF;
+}
+
+html.dark .btn-primary:hover:not(:disabled) {
+  background-color: #2563EB;
+}
+
+html.dark .btn-secondary {
+  background-color: #172133;
+  border-color: #283750;
+  color: #CBD5E1;
+}
+
+html.dark .btn-secondary:hover {
+  background-color: #1E2B42;
+  border-color: #3B4E70;
+  color: #FFFFFF;
+}
+
+html.dark header {
+  background-color: #101726;
+  border-color: #1E293B;
+}
+
+html.dark #admin-badge {
+  background-color: #172133;
+  border-color: #283750;
+}
+
+html.dark #admin-name {
+  color: #E2E8F0;
+}
+
+/* Custom Refined Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #2D3B52;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #415373;
+}

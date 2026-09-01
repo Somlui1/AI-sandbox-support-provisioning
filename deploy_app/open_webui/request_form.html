@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en-US" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <title>AICO - AI Sandbox Request</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        primary: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        gray: {
+                            850: '#1f2937',
+                            900: '#111827',
+                            950: '#030712',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-disabled {
+            background-color: rgba(3,7,18,0.5) !important;
+            border-color: #1f2937 !important;
+            color: #6b7280 !important;
+            cursor: not-allowed !important;
+        }
+
+        .shake {
+            animation: shake 0.4s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+    </style>
+</head>
+
+<body class="antialiased min-h-screen flex flex-col relative selection:bg-indigo-500/30">
+
+    <!-- Animated Background Elements -->
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-indigo-600/20 blur-[120px] animate-pulse-slow"></div>
+        <div class="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-purple-600/20 blur-[120px] animate-pulse-slow" style="animation-delay: 1s;"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-blue-600/5 blur-[160px]"></div>
+        
+        <!-- Grid Pattern -->
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f293720_1px,transparent_1px),linear-gradient(to_bottom,#1f293720_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_80%,transparent_100%)]"></div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="relative z-10 flex-grow flex items-center justify-center p-4 sm:p-8 w-full max-w-7xl mx-auto min-h-screen">
+        
+        <!-- VIEW 1: LOGIN SCREEN -->
+        <div id="view-login" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center w-full fade-in">
+            <!-- Left Branding Side -->
+            <div class="lg:col-span-6 hidden lg:flex flex-col justify-center pr-6 space-y-6 select-none">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold tracking-wide w-fit">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                    </span>
+                    <span>AICO: Intelligence in Motion</span>
+                </div>
+                
+                <div class="space-y-3">
+                    <h1 class="text-4xl xl:text-5xl font-extrabold tracking-tight text-white leading-tight">Meet <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">AICO</span></h1>
+                    <p class="text-indigo-300 text-sm font-semibold tracking-wide">AAPICO Intelligence Companion for Opportunity</p>
+                    <p class="text-gray-300 text-sm leading-relaxed max-w-lg">AICO is AAPICO's intelligent companion, empowering our people to transform knowledge into action and create new opportunities through AI.</p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <div class="group p-3.5 rounded-2xl bg-gray-900/50 border border-gray-800/80 backdrop-blur-xl transition-all duration-300">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <div class="h-7 w-7 rounded-lg bg-indigo-500/20 text-indigo-400 font-extrabold text-sm flex items-center justify-center">A</div>
+                            <h3 class="text-sm font-bold text-gray-200">AAPICO</h3>
+                        </div>
+                        <p class="text-xs text-gray-500">Enterprise AI Platform for our people</p>
+                    </div>
+                    <div class="group p-3.5 rounded-2xl bg-gray-900/50 border border-gray-800/80 backdrop-blur-xl transition-all duration-300">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <div class="h-7 w-7 rounded-lg bg-purple-500/20 text-purple-400 font-extrabold text-sm flex items-center justify-center">I</div>
+                            <h3 class="text-sm font-bold text-gray-200">Intelligence</h3>
+                        </div>
+                        <p class="text-xs text-gray-500">Powered by state-of-the-art AI models</p>
+                    </div>
+                    <div class="group p-3.5 rounded-2xl bg-gray-900/50 border border-gray-800/80 backdrop-blur-xl transition-all duration-300">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <div class="h-7 w-7 rounded-lg bg-pink-500/20 text-pink-400 font-extrabold text-sm flex items-center justify-center">C</div>
+                            <h3 class="text-sm font-bold text-gray-200">Companion</h3>
+                        </div>
+                        <p class="text-xs text-gray-500">Your personal AI sandbox environment</p>
+                    </div>
+                    <div class="group p-3.5 rounded-2xl bg-gray-900/50 border border-gray-800/80 backdrop-blur-xl transition-all duration-300">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <div class="h-7 w-7 rounded-lg bg-green-500/20 text-green-400 font-extrabold text-sm flex items-center justify-center">O</div>
+                            <h3 class="text-sm font-bold text-gray-200">Opportunity</h3>
+                        </div>
+                        <p class="text-xs text-gray-500">Build AI apps that solve real problems</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Login Card -->
+            <div class="lg:col-span-6 w-full max-w-md mx-auto">
+                <div class="relative rounded-3xl p-8 sm:p-10 bg-gray-900/70 backdrop-blur-2xl border border-gray-800/90 shadow-2xl shadow-black/50">
+                    
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-white tracking-tight">AICO</h2>
+                                <p class="text-[11px] text-gray-400 font-medium">AI Sandbox Portal</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 border border-green-500/20">
+                            <span class="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                            <span class="text-[10px] text-green-400 font-medium">System Online</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6 text-left">
+                        <h2 class="text-2xl font-bold text-white tracking-tight">Sign in with LDAP</h2>
+                        <p class="text-xs text-gray-400 mt-1">Use your company Active Directory credentials to submit a sandbox access request.</p>
+                    </div>
+                    
+                    <!-- Error Banner -->
+                    <div id="loginError" class="hidden mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span id="loginErrorMsg">Invalid credentials. Please try again.</span>
+                    </div>
+                    
+                    <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5 text-left">
+                        <div>
+                            <label for="username" class="text-xs font-semibold text-gray-300 mb-1.5 block">Username</label>
+                            <input type="text" id="username" autocomplete="username" class="w-full px-4 py-2.5 text-sm rounded-xl bg-gray-800/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all" required placeholder="e.g. somchai.j">
+                        </div>
+                        
+                        <div>
+                            <label for="password" class="text-xs font-semibold text-gray-300 mb-1.5 block">Password</label>
+                            <div class="relative">
+                                <input type="password" id="password" autocomplete="current-password" class="w-full px-4 py-2.5 pr-10 text-sm rounded-xl bg-gray-800/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all" required placeholder="Enter your password">
+                                <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors">
+                                    <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-2">
+                            <button id="authBtn" type="submit" class="w-full py-3 px-4 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all duration-200 flex items-center justify-center gap-2">
+                                <span id="authBtnText">Authenticate</span>
+                                <svg id="authBtnIcon" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                <svg id="authLoader" class="animate-spin hidden size-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: AI SANDBOX REQUEST FORM (Hidden initially) -->
+        <div id="view-request" class="w-full max-w-4xl mx-auto hidden">
+            
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 mb-3 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold tracking-wide">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                        LDAP Authenticated
+                    </div>
+                    <h2 class="text-3xl font-extrabold text-white tracking-tight">AI Sandbox Access Request</h2>
+                    <p class="text-sm text-gray-400 mt-2">Please provide details about the application you want to build to request sandbox access.</p>
+                </div>
+                <div class="flex items-center gap-3 bg-gray-900/50 px-4 py-2.5 rounded-xl border border-gray-800 shrink-0">
+                    <div class="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-xs uppercase" id="userAvatar">??</div>
+                    <div class="text-sm">
+                        <p class="font-semibold text-gray-200 leading-none" id="displayUserName">Loading...</p>
+                        <p class="text-[10px] text-gray-500 mt-1" id="displayDepartment">Digital Innovation</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Error Banner -->
+            <div id="submitError" class="hidden mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span id="submitErrorMsg">Failed to submit request. Please try again.</span>
+            </div>
+
+            <form id="requestForm" onsubmit="submitRequest(event)" class="relative rounded-3xl p-6 sm:p-8 bg-gray-900/70 backdrop-blur-2xl border border-gray-800/90 shadow-2xl shadow-black/50">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    
+                    <!-- Column 1: User Info (LDAP Auto-filled) -->
+                    <div class="space-y-5">
+                        <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+                            <h3 class="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                1. User Information
+                            </h3>
+                            <span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-1 rounded border border-gray-700">Auto-filled via LDAP</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Full Name -->
+                            <div class="col-span-2">
+                                <label class="text-xs font-semibold text-gray-400 mb-1.5 block">Full Name</label>
+                                <div class="relative">
+                                    <input type="text" id="fieldFullName" disabled class="input-disabled w-full px-4 py-2.5 text-sm rounded-xl border" placeholder="Loading...">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                </div>
+                            </div>
+                            
+                            <!-- Employee ID -->
+                            <div>
+                                <label class="text-xs font-semibold text-gray-400 mb-1.5 block">Employee ID</label>
+                                <input type="text" id="fieldEmployeeId" disabled class="input-disabled w-full px-4 py-2.5 text-sm rounded-xl border" placeholder="Loading...">
+                            </div>
+
+                            <!-- Department -->
+                            <div>
+                                <label class="text-xs font-semibold text-gray-400 mb-1.5 block">Department</label>
+                                <input type="text" id="fieldDepartment" disabled class="input-disabled w-full px-4 py-2.5 text-sm rounded-xl border" placeholder="Loading...">
+                            </div>
+
+                            <!-- Email -->
+                            <div class="col-span-2">
+                                <label class="text-xs font-semibold text-gray-400 mb-1.5 block">Company Email (PocketBase Account)</label>
+                                <input type="email" id="fieldEmail" disabled class="input-disabled w-full px-4 py-2.5 text-sm rounded-xl border" placeholder="Loading...">
+                            </div>
+
+                            <!-- Approver -->
+                            <div class="col-span-2">
+                                <label class="text-xs font-semibold text-gray-400 mb-1.5 block">Manager / Approver</label>
+                                <div class="relative">
+                                    <input type="text" id="fieldApprover" disabled class="input-disabled w-full px-4 py-2.5 pl-10 text-sm rounded-xl border" placeholder="Loading...">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                                </div>
+                                <p class="text-[10px] text-gray-500 mt-1">Approval request will be sent to this manager automatically.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: App Idea Details -->
+                    <div class="space-y-5">
+                        <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+                            <h3 class="text-sm font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                                2. Project Details
+                            </h3>
+                        </div>
+
+                        <div class="space-y-4">
+                            <!-- Project Name -->
+                            <div>
+                                <label for="projName" class="text-xs font-semibold text-gray-300 mb-1.5 block">Project Name <span class="text-pink-500">*</span></label>
+                                <input type="text" id="projName" required class="w-full px-4 py-2.5 text-sm rounded-xl bg-gray-800/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all" placeholder="e.g. Smart Leave Request Form">
+                            </div>
+
+                            <!-- Description -->
+                            <div>
+                                <label for="projDesc" class="text-xs font-semibold text-gray-300 mb-1.5 block">Short Description (What does it do?) <span class="text-pink-500">*</span></label>
+                                <textarea id="projDesc" required rows="3" class="w-full px-4 py-2.5 text-sm rounded-xl bg-gray-800/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all resize-none" placeholder="Briefly explain the core functionality and problem it solves..."></textarea>
+                            </div>
+
+                            <!-- Target Audience -->
+                            <div>
+                                <label for="projAudience" class="text-xs font-semibold text-gray-300 mb-1.5 block">Target Audience (Who will use it?) <span class="text-pink-500">*</span></label>
+                                <input type="text" id="projAudience" required class="w-full px-4 py-2.5 text-sm rounded-xl bg-gray-800/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all" placeholder="e.g. Factory Line Managers, HR Department">
+                            </div>
+
+                            <!-- App Type -->
+                            <div>
+                                <label for="projType" class="text-xs font-semibold text-gray-300 mb-1.5 block">App Type <span class="text-pink-500">*</span></label>
+                                <div class="relative">
+                                    <select id="projType" required class="appearance-none w-full px-4 py-2.5 text-sm rounded-xl bg-gray-800/80 border border-gray-700/80 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all cursor-pointer">
+                                        <option value="" disabled selected>Select an application type</option>
+                                        <option value="form">Data Collection / Form</option>
+                                        <option value="booking">Booking / Reservation System</option>
+                                        <option value="dashboard">Data Visualization / Dashboard</option>
+                                        <option value="calculator">Calculation / Logic Tool</option>
+                                        <option value="chatbot">Custom AI Chatbot</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-gray-800 flex flex-col-reverse sm:flex-row justify-end gap-3">
+                    <button type="button" onclick="window.location.reload()" class="px-5 py-2.5 rounded-xl font-semibold text-sm text-gray-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 transition-colors cursor-pointer text-center">
+                        Cancel
+                    </button>
+                    <button type="submit" id="submitRequestBtn" class="px-6 py-2.5 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2">
+                        <span id="submitBtnText">Submit Request</span>
+                        <svg id="submitIcon" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                        <svg id="submitLoader" class="animate-spin hidden size-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- VIEW 3: SUCCESS MESSAGE (Hidden initially) -->
+        <div id="view-success" class="w-full max-w-md mx-auto hidden fade-in text-center">
+            <div class="rounded-3xl p-10 bg-gray-900/70 backdrop-blur-2xl border border-gray-800/90 shadow-2xl shadow-black/50 flex flex-col items-center">
+                <div class="h-20 w-20 rounded-full bg-green-500/20 flex items-center justify-center mb-6 ring-2 ring-green-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">Request Submitted!</h2>
+                <p class="text-sm text-gray-400 mb-6">Your sandbox request for <span id="successProjName" class="font-semibold text-white"></span> has been sent to your manager for approval.</p>
+                <div class="bg-gray-800/50 rounded-xl p-4 w-full text-left mb-6 border border-gray-700/50 space-y-2">
+                    <p class="text-xs text-gray-500 font-semibold mb-2">What happens next:</p>
+                    <div class="flex items-start gap-2.5">
+                        <div class="h-5 w-5 rounded-full bg-indigo-500/20 text-indigo-400 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</div>
+                        <p class="text-xs text-gray-300">Your manager reviews and approves the request in the Provisioning Portal.</p>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                        <div class="h-5 w-5 rounded-full bg-purple-500/20 text-purple-400 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</div>
+                        <p class="text-xs text-gray-300">The system automatically provisions a PocketBase container and AI Agent for your project.</p>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                        <div class="h-5 w-5 rounded-full bg-green-500/20 text-green-400 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</div>
+                        <p class="text-xs text-gray-300">You receive login credentials and access to your personal AICO sandbox environment.</p>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-600 bg-gray-900/50 rounded-lg px-4 py-2 border border-gray-800 w-full text-center mb-4">
+                    Request ID: <span id="successReqId" class="font-mono text-gray-400"></span>
+                </div>
+                <button onclick="window.location.reload()" class="w-full py-2.5 rounded-xl font-semibold text-sm text-white bg-gray-800 hover:bg-gray-700 border border-gray-700 transition-colors">
+                    Submit Another Request
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // ─── State ────────────────────────────────────────────────────────────────
+        let currentUser = null;
+
+        // Detect API base URL: same host as this page (works for both direct & proxied)
+        const API_BASE = window.location.origin;
+
+        // ─── DOM refs ─────────────────────────────────────────────────────────────
+        const viewLogin   = document.getElementById('view-login');
+        const viewRequest = document.getElementById('view-request');
+        const viewSuccess = document.getElementById('view-success');
+
+        const authBtnText = document.getElementById('authBtnText');
+        const authBtnIcon = document.getElementById('authBtnIcon');
+        const authLoader  = document.getElementById('authLoader');
+        const loginError  = document.getElementById('loginError');
+        const loginErrorMsg = document.getElementById('loginErrorMsg');
+
+        const submitBtnText  = document.getElementById('submitBtnText');
+        const submitIcon     = document.getElementById('submitIcon');
+        const submitLoader   = document.getElementById('submitLoader');
+        const submitError    = document.getElementById('submitError');
+        const submitErrorMsg = document.getElementById('submitErrorMsg');
+
+        // ─── Helpers ──────────────────────────────────────────────────────────────
+        function togglePassword() {
+            const pwd = document.getElementById('password');
+            pwd.type = pwd.type === 'password' ? 'text' : 'password';
+        }
+
+        function setAuthLoading(loading) {
+            authBtnText.innerText = loading ? 'Authenticating...' : 'Authenticate';
+            authBtnIcon.classList.toggle('hidden', loading);
+            authLoader.classList.toggle('hidden', !loading);
+            document.getElementById('authBtn').disabled = loading;
+        }
+
+        function setSubmitLoading(loading) {
+            submitBtnText.innerText = loading ? 'Submitting...' : 'Submit Request';
+            submitIcon.classList.toggle('hidden', loading);
+            submitLoader.classList.toggle('hidden', !loading);
+            document.getElementById('submitRequestBtn').disabled = loading;
+        }
+
+        function showLoginError(msg) {
+            loginErrorMsg.innerText = msg || 'Authentication failed. Please try again.';
+            loginError.classList.remove('hidden');
+            document.getElementById('loginForm').classList.add('shake');
+            setTimeout(() => document.getElementById('loginForm').classList.remove('shake'), 500);
+        }
+
+        function hideLoginError() {
+            loginError.classList.add('hidden');
+        }
+
+        function populateUserFields(user) {
+            currentUser = user;
+
+            // Header avatar
+            const initials = (user.fullName || user.username || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+            document.getElementById('userAvatar').innerText = initials;
+            document.getElementById('displayUserName').innerText = user.fullName || user.username;
+            document.getElementById('displayDepartment').innerText = user.department || 'AAPICO';
+
+            // LDAP auto-filled fields
+            document.getElementById('fieldFullName').value     = user.fullName   || '';
+            document.getElementById('fieldEmployeeId').value  = user.employeeId || '';
+            document.getElementById('fieldDepartment').value  = user.department  || '';
+            document.getElementById('fieldEmail').value       = user.email       || '';
+            document.getElementById('fieldApprover').value    = user.approver    || 'Wichai Manager (VP of IT)';
+        }
+
+        function transitionTo(view) {
+            [viewLogin, viewRequest, viewSuccess].forEach(v => {
+                v.classList.add('hidden');
+                v.classList.remove('fade-in');
+            });
+            view.classList.remove('hidden');
+            requestAnimationFrame(() => view.classList.add('fade-in'));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ─── Auth Flow ────────────────────────────────────────────────────────────
+        async function handleLogin(event) {
+            event.preventDefault();
+            hideLoginError();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                showLoginError('Please enter both username and password.');
+                return;
+            }
+
+            setAuthLoading(true);
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/ldap-login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok || data.status !== 'success') {
+                    showLoginError(data.detail || 'Invalid credentials. Please check your username and password.');
+                    return;
+                }
+
+                populateUserFields(data.user);
+                transitionTo(viewRequest);
+
+            } catch (err) {
+                showLoginError('Unable to connect to authentication server. Please try again.');
+                console.error('Login error:', err);
+            } finally {
+                setAuthLoading(false);
+            }
+        }
+
+        // ─── Submit Request ───────────────────────────────────────────────────────
+        async function submitRequest(event) {
+            event.preventDefault();
+            submitError.classList.add('hidden');
+
+            if (!currentUser) {
+                alert('Session expired. Please log in again.');
+                transitionTo(viewLogin);
+                return;
+            }
+
+            const projName     = document.getElementById('projName').value.trim();
+            const projDesc     = document.getElementById('projDesc').value.trim();
+            const projAudience = document.getElementById('projAudience').value.trim();
+            const projType     = document.getElementById('projType').value;
+
+            if (!projName || !projDesc || !projAudience || !projType) {
+                submitErrorMsg.innerText = 'Please fill in all required fields.';
+                submitError.classList.remove('hidden');
+                return;
+            }
+
+            setSubmitLoading(true);
+            try {
+                const payload = {
+                    username:         currentUser.username,
+                    fullName:         currentUser.fullName,
+                    employeeId:       currentUser.employeeId,
+                    department:       currentUser.department,
+                    email:            currentUser.email,
+                    approver:         currentUser.approver,
+                    projectName:      projName,
+                    shortDescription: projDesc,
+                    targetAudience:   projAudience,
+                    appType:          projType,
+                };
+
+                const res = await fetch(`${API_BASE}/api/sandbox/requests`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    submitErrorMsg.innerText = data.detail || 'Failed to submit request. Please try again.';
+                    submitError.classList.remove('hidden');
+                    return;
+                }
+
+                // Show success
+                document.getElementById('successProjName').innerText = projName;
+                document.getElementById('successReqId').innerText    = data.request?.id || '—';
+                transitionTo(viewSuccess);
+
+            } catch (err) {
+                submitErrorMsg.innerText = 'Network error. Please check your connection and try again.';
+                submitError.classList.remove('hidden');
+                console.error('Submit error:', err);
+            } finally {
+                setSubmitLoading(false);
+            }
+        }
+    </script>
+</body>
+</html>

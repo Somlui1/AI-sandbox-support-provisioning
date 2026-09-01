@@ -6,12 +6,30 @@ import time
 
 def log_output(process, prefix):
     """Dynamically read process stdout/stderr line-by-line and print with colored label."""
-    while True:
-        line = process.stdout.readline()
-        if not line:
-            break
+    for line in iter(process.stdout.readline, b''):
         decoded = line.decode('utf-8', errors='replace').rstrip()
-        print(f"{prefix} {decoded}", flush=True)
+        if decoded:
+            print(f"{prefix} {decoded}", flush=True)
+
+def free_port(port=8000):
+    """If port is occupied on Windows, free it automatically to prevent [Errno 10048]."""
+    if sys.platform != "win32":
+        return
+    try:
+        cmd = f'powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort {port} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique"'
+        output = subprocess.check_output(cmd, shell=True).decode().strip()
+        if output:
+            for pid_str in output.split():
+                try:
+                    pid = int(pid_str.strip())
+                    if pid > 0 and pid != os.getpid():
+                        print(f"\033[93m[STARTUP] Releasing port {port} (stopping lingering PID {pid})...\033[0m", flush=True)
+                        subprocess.run(f"taskkill /F /PID {pid}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                except ValueError:
+                    pass
+            time.sleep(1.0)
+    except Exception:
+        pass
 
 def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -28,6 +46,7 @@ def main():
     BLUE = "\033[94m"
     MAGENTA = "\033[95m"
     GREEN = "\033[92m"
+    YELLOW = "\033[93m"
     RESET = "\033[0m"
 
     print("=" * 70)
@@ -36,12 +55,16 @@ def main():
     print(f" Python Interpreter: {venv_python}")
     print(f" Web Server Script : {main_script}")
     print(f" Worker Script     : {worker_script}")
-    print("=" * 70 + "\n")
+    print("=" * 70, flush=True)
 
-    # Prepare subprocess environment with forced UTF-8
+    # Automatically ensure port 8000 is clean before starting
+    free_port(8000)
+
+    # Prepare subprocess environment with forced UTF-8 & unbuffered output
     sub_env = os.environ.copy()
     sub_env["PYTHONIOENCODING"] = "utf-8"
     sub_env["PYTHONUTF8"] = "1"
+    sub_env["PYTHONUNBUFFERED"] = "1"
     deploy_app_dir = os.path.join(base_dir, "deploy_app")
     existing_pp = sub_env.get("PYTHONPATH", "")
     sub_env["PYTHONPATH"] = f"{deploy_app_dir}{os.pathsep}{base_dir}{os.pathsep}{existing_pp}".rstrip(os.pathsep)
@@ -53,18 +76,20 @@ def main():
         except Exception:
             pass
 
-    # Start main web application process
+    print(f"\n{GREEN}>>> Starting Web Server & Background Worker...{RESET}\n", flush=True)
+
+    # Start main web application process with -u (unbuffered)
     p_main = subprocess.Popen(
-        [venv_python, main_script],
+        [venv_python, "-u", main_script],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         cwd=base_dir,
         env=sub_env
     )
 
-    # Start worker pipeline process
+    # Start worker pipeline process with -u (unbuffered)
     p_worker = subprocess.Popen(
-        [venv_python, worker_script],
+        [venv_python, "-u", worker_script],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         cwd=base_dir,
@@ -81,12 +106,15 @@ def main():
     t_main.start()
     t_worker.start()
 
+    print(f"{GREEN}[READY] Access Admin Portal at : http://localhost:8000/{RESET}")
+    print(f"{GREEN}[READY] Access Request Form at : http://localhost:8000/request{RESET}\n", flush=True)
+
     try:
         # Loop to monitor lifecycle of both runtimes
         while p_main.poll() is None and p_worker.poll() is None:
-            time.sleep(1.0)
+            time.sleep(0.5)
     except KeyboardInterrupt:
-        print(f"\n\n{GREEN}Shutting down orchestrator processes gracefully...{RESET}")
+        print(f"\n\n{GREEN}Shutting down orchestrator processes gracefully...{RESET}", flush=True)
     finally:
         p_main.terminate()
         p_worker.terminate()
@@ -96,7 +124,7 @@ def main():
         except subprocess.TimeoutExpired:
             p_main.kill()
             p_worker.kill()
-        print("All processes terminated successfully.")
+        print("All processes terminated successfully.", flush=True)
 
 if __name__ == "__main__":
     main()

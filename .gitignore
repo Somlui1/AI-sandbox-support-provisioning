@@ -30,6 +30,7 @@ __pycache__/
 build/
 develop-eggs/
 dist/
+!deploy_app/open_webui/frontend/dist/
 downloads/
 eggs/
 .eggs/

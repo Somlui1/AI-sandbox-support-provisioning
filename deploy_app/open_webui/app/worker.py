@@ -30,8 +30,9 @@ from open_webui.app.settings import (
     REDIS_URL, REDIS_QUEUE_NAME, get_redis_client,
     AGENTS_DIR, LDAP_DOMAIN
 )
-import open_webui.app.database as db
-from open_webui.app.ldap_client import sync_ldap_user_to_openwebui
+import open_webui.app.core.database as db
+from open_webui.app.core.ldap_client import sync_ldap_user_to_openwebui
+from open_webui.app.core.prompt_utils import load_system_prompt_template, interpolate_prompt_variables
 
 # Tuning parameters for polling
 INITIAL_BOOT_DELAY_SECONDS = 15
@@ -161,6 +162,11 @@ class JobWorker:
 
         db.update_job_status(job_uuid, "running")
 
+        # Resolve OpenWebUI client for this job
+        owu_config = job_data.get("openwebui") or job_data.get("openwebui_agent") or {}
+        owu_token = owu_config.get("openwebui_token") or job_data.get("openwebui_token") or OPENWEBUI_ADMIN_TOKEN
+        owu_client = OpenWebUIClient(OPENWEBUI_BASE_URL, owu_token)
+
         # Guarantee User is Synced to Open WebUI to obtain UUID for permission grants
         standard_domain = LDAP_DOMAIN or "aapico.com"
         standard_email = f"{sam_account}@{standard_domain}".lower()
@@ -173,7 +179,7 @@ class JobWorker:
                     "sAMAccountName": sam_account,
                     "name": sam_account,
                     "email": standard_email
-                }, self.openwebui)
+                }, owu_client)
                 user_id = sync_res.get("user", {}).get("id")
                 if not user_id:
                     raise RuntimeError(f"User sync completed but no Open WebUI UUID was returned: {sync_res}")
@@ -194,7 +200,7 @@ class JobWorker:
             raw_username = pb_config.get("username_prefix") or pb_config.get("username") or job_data.get("service_username") or user_name or user_email
             cleaned_name = clean_username(raw_username)
             service_name = f"pocketbase-{cleaned_name}"
-            fqdn = f"http://pb-{cleaned_name}.10.10.3.111.sslip.io"
+            fqdn = pb_config.get("fqdn") or pb_config.get("pocketbase_url") or f"http://pb-{cleaned_name}.10.10.3.111.sslip.io"
             
             # Default email to username@domain
             default_domain = LDAP_DOMAIN or "aapico.com"
@@ -337,6 +343,8 @@ class JobWorker:
             # Locate agent template json
             template_filename = owu_config.get("template_name") or job_data.get("template_name") or "pocketbase_agent.json"
             candidate_paths = [
+                os.path.join(base_dir, "templates", "agents", template_filename),
+                os.path.join(base_dir, "templates", template_filename),
                 os.path.join(AGENTS_DIR, template_filename),
                 os.path.join(base_dir, "..", "..", "agents", template_filename),
                 os.path.join(base_dir, "..", "..", template_filename),
@@ -358,16 +366,35 @@ class JobWorker:
             # Apply custom agent naming or defaults
             custom_agent_id = owu_config.get("agent_id") or job_data.get("agent_id") or f"pocketbase-agent-{cleaned_name}"
             custom_agent_name = owu_config.get("agent_name") or job_data.get("agent_name") or f"PocketBase Agent - {user_name}"
-            base_model = owu_config.get("base_model_id") or job_data.get("base_model_id") or resolve_base_model(self.openwebui)
+            base_model = owu_config.get("base_model_id") or job_data.get("base_model_id") or resolve_base_model(owu_client)
             
             agent_data["id"] = custom_agent_id
             agent_data["name"] = custom_agent_name
             agent_data["base_model_id"] = base_model
 
-            # System prompt override if provided
+            # System prompt resolution with template fallback and dynamic placeholder interpolation
             sys_prompt = owu_config.get("system_prompt") or job_data.get("system_prompt")
+            sys_prompt_file = owu_config.get("system_prompt_file") or job_data.get("system_prompt_file") or "system_prompt.md"
+
+            if not sys_prompt and sys_prompt_file:
+                sys_prompt = load_system_prompt_template(sys_prompt_file)
+
+            if not sys_prompt:
+                sys_prompt = agent_data.get("params", {}).get("system", "")
+
+            prompt_context = {
+                "pocketbase_url": fqdn,
+                "fqdn": fqdn,
+                "username": cleaned_name,
+                "user_name": user_name,
+                "user_email": user_email,
+                "admin_email": admin_email,
+                "service_name": service_name,
+            }
+
             if sys_prompt:
-                agent_data.setdefault("params", {})["system"] = sys_prompt
+                final_sys_prompt = interpolate_prompt_variables(sys_prompt, prompt_context)
+                agent_data.setdefault("params", {})["system"] = final_sys_prompt
 
             # Tools override if provided
             tools = owu_config.get("tool_ids") if owu_config.get("tool_ids") is not None else job_data.get("tool_ids")
@@ -389,7 +416,12 @@ class JobWorker:
             pb_valves["POCKETBASE_ADMIN_PASSWORD"] = admin_password
 
             # Configure access grants (selected user and admin session + any additional user grants)
-            current_admin = self.openwebui.get_current_user()
+            current_admin = None
+            try:
+                current_admin = owu_client.get_current_user()
+            except Exception as e_admin:
+                print(f"[WARNING] Could not fetch current admin user from Open WebUI session: {e_admin}")
+
             grants = []
             seen_grants = set()
 
@@ -426,10 +458,10 @@ class JobWorker:
             agent_data["access_grants"] = grants
 
             try:
-                self.openwebui.create_model(agent_data)
+                owu_client.create_model(agent_data)
             except Exception as e_create:
                 print(f"[INFO] Create model failed, attempting update. Details: {e_create}")
-                self.openwebui.update_model(agent_data)
+                owu_client.update_model(agent_data)
 
             self.publish_progress(
                 job_uuid,

@@ -18,6 +18,7 @@
   },
   "openwebui": {
     "default_template_file": "pocketbase_agent.json",
+    "system_prompt_file": "system_prompt.md",
     "agent_name_pattern": "PocketBase Agent - {username}",
     "base_model_id": "deepseek-v4-flash",
     "tool_ids": [

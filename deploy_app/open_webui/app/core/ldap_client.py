@@ -12,7 +12,7 @@ except ImportError:
     HAS_LDAP3 = False
 
 # Add parent directory to path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
 from open_webui.app.settings import (
     LDAP_HOST,
     LDAP_PORT,
