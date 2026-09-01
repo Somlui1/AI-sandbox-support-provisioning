@@ -1,0 +1,90 @@
+# Environments and Secrets
+.env
+.env.*
+*.env
+!.env.example
+*.pem
+*.key
+*.pub
+*.crt
+*.cert
+*.pfx
+*.p12
+id_rsa
+id_ed25519
+*.secret
+*.secrets
+secrets.json
+credentials.json
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# C extensions
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Agent Developer Kit / Gemini / Session Cache
+.adk/
+**/.adk/
+.gemini/
+**/.gemini/
+
+# Databases & Runtime storage
+*.db
+*.sqlite
+*.sqlite3
+*.rdb
+file_redis_store/
+**/file_redis_store/
+
+# Logs and runtime artifacts
+*.log
+logs/
+tmp/
+temp/
+
+# Editor and OS files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini

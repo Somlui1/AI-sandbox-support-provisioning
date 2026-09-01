@@ -1,0 +1,15 @@
+services:
+  pocketbase:
+    image: 'ghcr.io/muchobien/pocketbase:latest'
+
+    environment:
+      - SERVICE_FQDN_POCKETBASE_8090
+      - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL}
+      - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD}
+    volumes:
+      - '/data/pocketbase/pb_hooks:/pb_hooks'
+      - 'pocketbase-data-${UNIQUE_ID}:/pb_data'
+      - 'pocketbase-public-${UNIQUE_ID}:/pb_public'
+volumes:
+  pocketbase-data-${UNIQUE_ID}:
+  pocketbase-public-${UNIQUE_ID}:

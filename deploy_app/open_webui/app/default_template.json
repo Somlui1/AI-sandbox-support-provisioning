@@ -1,0 +1,40 @@
+{
+  "version": "1.0.0",
+  "app": {
+    "title": "PocketBase & Open WebUI Provisioning Portal",
+    "description": "Automated deployment engine connecting Coolify, PocketBase, Active Directory LDAP, and Open WebUI"
+  },
+  "ldap": {
+    "default_domain": "aapico.com"
+  },
+  "pocketbase": {
+    "service_name_prefix": "pocketbase-",
+    "subdomain_prefix": "pb-",
+    "domain_suffix": "10.10.3.111.sslip.io",
+    "fqdn_template": "http://pb-{username}.10.10.3.111.sslip.io",
+    "admin_email_pattern": "{username}@aapico.com",
+    "default_password_length": 14,
+    "docker_image": "ghcr.io/muchobien/pocketbase:latest"
+  },
+  "openwebui": {
+    "default_template_file": "pocketbase_agent.json",
+    "agent_name_pattern": "PocketBase Agent - {username}",
+    "base_model_id": "deepseek-v4-flash",
+    "tool_ids": [
+      "pocketbase"
+    ],
+    "system_prompt": "You are a PocketBase automation expert. You have direct access to tools for querying, creating, and updating database collections and records for the target user.",
+    "default_permission": "read_write"
+  },
+  "pipeline": {
+    "total_steps": 6,
+    "stages": [
+      "Initializing",
+      "Syncing User to Open WebUI",
+      "Deploying PocketBase",
+      "Waiting for Health",
+      "Verifying Admin",
+      "Registering Agent"
+    ]
+  }
+}
