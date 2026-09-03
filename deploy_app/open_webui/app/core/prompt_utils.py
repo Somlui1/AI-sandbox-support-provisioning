@@ -7,31 +7,21 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 def extract_system_prompt_from_text(text: str) -> str:
     """
     Extracts the inner system prompt content.
-    If the text contains an outer markdown code fence block (e.g. ```markdown ... ```),
+    If the entire text is wrapped inside an outer markdown code fence block (e.g. ```markdown ... ```),
     it extracts the content inside that block, stripping outer metadata and instructions.
     Otherwise returns the trimmed text.
     """
     if not text:
         return ""
 
-    lines = text.splitlines()
-    first_fence_idx = None
-    last_fence_idx = None
+    trimmed = text.strip()
+    lines = trimmed.splitlines()
 
-    for i, line in enumerate(lines):
-        stripped = line.strip()
-        if first_fence_idx is None:
-            if stripped.startswith("```"):
-                first_fence_idx = i
-        else:
-            if stripped.startswith("```"):
-                last_fence_idx = i
+    # Unwrap only if the entire content is wrapped in a top-level code fence
+    if len(lines) >= 2 and lines[0].strip().startswith("```") and lines[-1].strip() == "```":
+        return "\n".join(lines[1:-1]).strip()
 
-    if first_fence_idx is not None and last_fence_idx is not None and last_fence_idx > first_fence_idx:
-        inner_lines = lines[first_fence_idx + 1:last_fence_idx]
-        return "\n".join(inner_lines).strip()
-
-    return text.strip()
+    return trimmed
 
 
 def find_system_prompt_file(filename: str = "system_prompt.md") -> str:
