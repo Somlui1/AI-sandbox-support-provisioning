@@ -59,7 +59,7 @@ export default function DeploymentHistory({ token, initialJobUuid }: DeploymentH
   const fetchJobsHistory = async () => {
     setLoadingHistory(true);
     try {
-      const res = await fetch("/api/jobs", {
+      const res = await fetch(`${API_BASE}/api/jobs`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json().catch(() => null);
@@ -76,7 +76,7 @@ export default function DeploymentHistory({ token, initialJobUuid }: DeploymentH
   const handleClearAllHistory = async () => {
     setIsClearing(true);
     try {
-      const res = await fetch("/api/jobs/clear", {
+      const res = await fetch(`${API_BASE}/api/jobs/clear`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -98,7 +98,7 @@ export default function DeploymentHistory({ token, initialJobUuid }: DeploymentH
   const handleDeleteSingleJob = async (jobUuid: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const res = await fetch(`/api/jobs/${jobUuid}/delete`, {
+      const res = await fetch(`${API_BASE}/api/jobs/${jobUuid}/delete`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -149,7 +149,7 @@ export default function DeploymentHistory({ token, initialJobUuid }: DeploymentH
 
     const pollOnce = async () => {
       try {
-        const res = await fetch(`/api/jobs/${uuid}`, {
+        const res = await fetch(`${API_BASE}/api/jobs/${uuid}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const job: ProvisioningJob = await res.json().catch(() => null);

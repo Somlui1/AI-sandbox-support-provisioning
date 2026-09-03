@@ -10,6 +10,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { SandboxRequest } from "../types";
+import { API_BASE } from "../api/client";
 
 interface SandboxPortalProps {
   adminToken: string | null;
@@ -52,7 +53,7 @@ export default function SandboxPortal({ adminToken, onGoToHistory, onApproveAndR
   const fetchRequests = async () => {
     setRequestsLoading(true);
     try {
-      const res = await fetch("/api/sandbox/requests");
+      const res = await fetch(`${API_BASE}/api/sandbox/requests`);
       if (res.ok) {
         const data = await res.json();
         setRequests(data);
@@ -76,7 +77,7 @@ export default function SandboxPortal({ adminToken, onGoToHistory, onApproveAndR
     setLoginError(null);
 
     try {
-      const res = await fetch("/api/auth/ldap-login", {
+      const res = await fetch(`${API_BASE}/api/auth/ldap-login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: usernameInput, password: passwordInput })
@@ -102,7 +103,7 @@ export default function SandboxPortal({ adminToken, onGoToHistory, onApproveAndR
     setFormLoading(true);
 
     try {
-      const res = await fetch("/api/sandbox/requests", {
+      const res = await fetch(`${API_BASE}/api/sandbox/requests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -138,7 +139,7 @@ export default function SandboxPortal({ adminToken, onGoToHistory, onApproveAndR
   const handleApprove = async (req: SandboxRequest) => {
     setActionLoadingId(req.id);
     try {
-      const res = await fetch(`/api/sandbox/requests/${req.id}/approve`, { method: "POST" });
+      const res = await fetch(`${API_BASE}/api/sandbox/requests/${req.id}/approve`, { method: "POST" });
       if (res.ok) {
         const data = await res.json();
         const enrichedReq: SandboxRequest = {
@@ -166,7 +167,7 @@ export default function SandboxPortal({ adminToken, onGoToHistory, onApproveAndR
   const handleReject = async (id: string) => {
     setActionLoadingId(id);
     try {
-      const res = await fetch(`/api/sandbox/requests/${id}/reject`, { method: "POST" });
+      const res = await fetch(`${API_BASE}/api/sandbox/requests/${id}/reject`, { method: "POST" });
       if (res.ok) {
         await fetchRequests();
       }
@@ -180,7 +181,7 @@ export default function SandboxPortal({ adminToken, onGoToHistory, onApproveAndR
   const handleDeploy = async (id: string) => {
     setActionLoadingId(id);
     try {
-      const res = await fetch(`/api/sandbox/requests/${id}/deploy`, { method: "POST" });
+      const res = await fetch(`${API_BASE}/api/sandbox/requests/${id}/deploy`, { method: "POST" });
       const data = await res.json();
       if (res.ok && data.status === "started") {
         await fetchRequests();
