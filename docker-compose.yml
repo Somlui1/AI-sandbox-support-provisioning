@@ -16,6 +16,11 @@ services:
       - orchestrator_data:/app/deploy_app/open_webui/app/data
       # Mount compiled React Frontend from host (Instant updates without rebuilding Docker image)
       - ./deploy_app/open_webui/frontend/dist:/app/deploy_app/open_webui/frontend/dist:ro
+      # Mount Python app code from host (Instant updates without rebuilding Docker image)
+      - ./deploy_app/open_webui/app/worker.py:/app/deploy_app/open_webui/app/worker.py:ro
+      - ./deploy_app/open_webui/app/settings.py:/app/deploy_app/open_webui/app/settings.py:ro
+      - ./deploy_app/open_webui/app/main.py:/app/deploy_app/open_webui/app/main.py:ro
+      - ./deploy_app/coolify/client.py:/app/deploy_app/coolify/client.py:ro
       # Mount standalone HTML templates
       - ./deploy_app/open_webui/request_form.html:/app/deploy_app/open_webui/request_form.html:ro
       - ./deploy_app/open_webui/email_approval_template.html:/app/deploy_app/open_webui/email_approval_template.html:ro

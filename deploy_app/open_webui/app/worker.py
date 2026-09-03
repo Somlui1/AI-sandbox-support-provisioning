@@ -690,6 +690,9 @@ class JobWorker:
                 print("Worker shutting down.")
                 break
             except Exception as e:
+                err_str = str(e).lower()
+                if "timeout" in err_str:
+                    continue
                 print(f"[ERROR] Worker error: {e}")
                 time.sleep(1)
 
