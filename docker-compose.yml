@@ -5,8 +5,8 @@ services:
       dockerfile: Dockerfile
     container_name: provisioning_orchestrator
     restart: unless-stopped
-    ports:
-      - "8001:8000"
+    expose:
+      - "8000"
     environment:
       - SERVICE_FQDN_ORCHESTRATOR_8000
       - PORT=8000
