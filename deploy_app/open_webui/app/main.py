@@ -60,6 +60,10 @@ def get_client(request) -> OpenWebUIClient:
 
 REACT_DIST_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
 
+# Base API / App Subpath (configurable via .env or directly here)
+# Example: APP_BASE_PATH = "/sandbox" (for http://aiva.aapico.com/sandbox) or "" (default root)
+APP_BASE_PATH = os.environ.get("APP_BASE_PATH", os.environ.get("BASE_API", "/sandbox")).strip().rstrip("/")
+
 
 async def homepage(request):
     """Serve the single page application interface (React dist or fallback template)."""
@@ -67,6 +71,12 @@ async def homepage(request):
     if os.path.exists(dist_index):
         with open(dist_index, "r", encoding="utf-8") as f:
             html_content = f.read()
+
+        # Inject runtime config from .env or main.py into <head>
+        config_payload = json.dumps({"apiBase": APP_BASE_PATH, "basePath": APP_BASE_PATH})
+        config_script = f'<script>window.__APP_CONFIG__ = {config_payload};</script>'
+        if "</head>" in html_content:
+            html_content = html_content.replace("</head>", f"  {config_script}\n</head>", 1)
         return HTMLResponse(html_content)
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1136,6 +1146,18 @@ routes = [
 react_assets_dir = os.path.join(REACT_DIST_DIR, "assets")
 if os.path.exists(react_assets_dir):
     routes.append(Mount("/assets", app=StaticFiles(directory=react_assets_dir), name="assets"))
+    if APP_BASE_PATH:
+        clean_base = APP_BASE_PATH.strip("/")
+        routes.append(Mount(f"/{clean_base}/assets", app=StaticFiles(directory=react_assets_dir), name="subpath_assets"))
+
+# If APP_BASE_PATH is configured (e.g. /sandbox), also register routes directly under that prefix
+if APP_BASE_PATH:
+    clean_base = APP_BASE_PATH.strip("/")
+    routes.insert(0, Route(f"/{clean_base}", homepage))
+    routes.insert(1, Route(f"/{clean_base}/", homepage))
+    routes.insert(2, Route(f"/{clean_base}/request", request_form_page))
+    routes.insert(3, Route(f"/{clean_base}/email-preview", email_preview_page))
+
 
 middleware = [
     Middleware(

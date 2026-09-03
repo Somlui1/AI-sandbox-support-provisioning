@@ -3,9 +3,22 @@
  * All API calls go through this module with automatic JWT token injection.
  */
 
-export const API_BASE = (typeof window !== 'undefined' && window.location.pathname.startsWith('/sandbox'))
-  ? '/sandbox'
-  : '';
+export function getApiBase() {
+  if (typeof window !== 'undefined') {
+    // 1. Configured via .env or main.py runtime injection
+    const injected = window.__APP_CONFIG__?.apiBase ?? window.__APP_CONFIG__?.basePath;
+    if (typeof injected === 'string' && injected.trim() !== '') {
+      return injected.trim().replace(/\/+$/, '');
+    }
+    // 2. Auto-detect from URL pathname if under a subpath like /sandbox
+    if (window.location.pathname.startsWith('/sandbox')) {
+      return '/sandbox';
+    }
+  }
+  return '';
+}
+
+export const API_BASE = getApiBase();
 
 function getToken() {
   return localStorage.getItem('openwebui_admin_token') || '';
@@ -21,7 +34,9 @@ function authHeaders(extra = {}) {
 }
 
 async function request(url, options = {}) {
-  const res = await fetch(`${API_BASE}${url}`, {
+  const base = getApiBase();
+  const fullUrl = url.startsWith('http') ? url : `${base}${url}`;
+  const res = await fetch(fullUrl, {
     ...options,
     headers: authHeaders(options.headers),
   });
@@ -132,7 +147,7 @@ export async function deleteJob(jobUuid) {
  */
 export function createJobEventSource(jobUuid) {
   const token = getToken();
-  return new EventSource(`${API_BASE}/api/jobs/${jobUuid}/stream?token=${encodeURIComponent(token)}`);
+  return new EventSource(`${getApiBase()}/api/jobs/${jobUuid}/stream?token=${encodeURIComponent(token)}`);
 }
 
 // ── Deployed Agents ─────────────────────────────────────────────────────────
