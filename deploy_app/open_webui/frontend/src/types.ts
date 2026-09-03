@@ -97,3 +97,19 @@ export interface SandboxRequest {
   created_at: string;
   deployed_job_uuid?: string;
 }
+
+export interface DeployedAgent {
+  job_uuid: string;
+  agent_model_id: string;
+  agent_name: string;
+  coolify_service_uuid?: string;
+  service_name?: string;
+  fqdn?: string;
+  user_id?: string;
+  user_name?: string;
+  user_email?: string;
+  status: string;
+  created_at: number;
+  updated_at?: number;
+}
+

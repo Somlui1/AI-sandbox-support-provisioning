@@ -10,17 +10,42 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.2s ease, color 0.2s ease;
+  overflow-x: hidden;
+}
+
+::selection {
+  background-color: rgba(99, 102, 241, 0.3);
+  color: #ffffff;
 }
 
 .font-mono {
   font-family: var(--font-mono);
 }
 
-/* Clean SaaS Card System */
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseSlow {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.08); }
+}
+
+.fade-in {
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-slow {
+  animation: pulseSlow 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* SaaS Card System - Light Mode */
 .saas-card {
   background-color: #FFFFFF;
   border: 1px solid #E2E8F0;
-  border-radius: 16px;
+  border-radius: 20px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
   transition: all 0.2s ease;
 }
@@ -28,48 +53,51 @@ body {
 .saas-card-subtle {
   background-color: #F8FAFC;
   border: 1px solid #E2E8F0;
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
-/* Input Controls */
+/* Input Controls - Light Mode */
 .input-dark, .saas-input {
   background-color: #FFFFFF;
   border: 1px solid #CBD5E1;
   color: #0F172A;
-  border-radius: 10px;
+  border-radius: 12px;
   transition: all 0.15s ease;
 }
 
 .input-dark:focus, .saas-input:focus {
   outline: none;
-  border-color: #2563EB;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  border-color: #6366F1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
 }
 
-/* Button System */
+/* Button System - Light Mode */
 .btn-primary {
-  background-color: #0F172A;
+  background: linear-gradient(135deg, #4F46E5 0%, #6366F1 50%, #7C3AED 100%);
   color: #FFFFFF;
-  font-weight: 500;
-  border-radius: 10px;
-  transition: all 0.15s ease;
-  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.12);
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px -2px rgba(79, 70, 229, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #1E293B;
-  box-shadow: 0 2px 4px 0 rgba(15, 23, 42, 0.16);
+  background: linear-gradient(135deg, #4338CA 0%, #4F46E5 50%, #6D28D9 100%);
+  box-shadow: 0 6px 20px -2px rgba(79, 70, 229, 0.5);
+  transform: translateY(-1px);
 }
 
 .btn-primary:active:not(:disabled) {
-  transform: scale(0.99);
+  transform: translateY(0) scale(0.99);
 }
 
 .btn-primary:disabled {
-  background-color: #E2E8F0;
+  background: #E2E8F0;
   color: #94A3B8;
   cursor: not-allowed;
   box-shadow: none;
+  border: none;
 }
 
 .btn-secondary {
@@ -77,7 +105,7 @@ body {
   border: 1px solid #E2E8F0;
   color: #334155;
   font-weight: 500;
-  border-radius: 10px;
+  border-radius: 12px;
   transition: all 0.15s ease;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
 }
@@ -92,87 +120,111 @@ body {
   transform: scale(0.99);
 }
 
-/* Calm, Eye-Friendly Dark Mode Overrides */
+/* ==========================================================================
+   Dark Mode - Vibe Alignment with request_form.html
+   Deep Dark (#030712), Glassmorphism, Indigo/Purple Gradient, Glowing Shadows
+   ========================================================================== */
+
 html.dark body {
-  background-color: #0B0F19;
-  color: #F8FAFC;
+  background-color: #030712;
+  color: #F3F4F6;
 }
 
+/* Glassmorphism Card System */
 html.dark .saas-card {
-  background-color: #131B2A;
-  border-color: #212D42;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  background-color: rgba(17, 24, 39, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(31, 41, 55, 0.85);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.02);
+  border-radius: 20px;
 }
 
 html.dark .saas-card-subtle {
-  background-color: #0E1522;
-  border-color: #212D42;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(31, 41, 55, 0.75);
+  border-radius: 14px;
 }
 
-html.dark .saas-input, html.dark .input-dark {
-  background-color: #0E1522;
-  border-color: #25334A;
-  color: #F8FAFC;
-}
-
-html.dark .saas-input:focus, html.dark .input-dark:focus {
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-}
-
-html.dark .btn-primary {
-  background-color: #3B82F6;
+/* Input Controls in Dark Mode */
+html.dark .saas-input, 
+html.dark .input-dark {
+  background-color: rgba(31, 41, 55, 0.75);
+  border: 1px solid rgba(55, 65, 81, 0.85);
   color: #FFFFFF;
+  border-radius: 12px;
+}
+
+html.dark .saas-input:focus, 
+html.dark .input-dark:focus {
+  border-color: #6366F1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+  background-color: rgba(31, 41, 55, 0.95);
+}
+
+/* Primary Button in Dark Mode: Glowing Gradient */
+html.dark .btn-primary {
+  background: linear-gradient(135deg, #4F46E5 0%, #6366F1 50%, #9333EA 100%);
+  color: #FFFFFF;
+  box-shadow: 0 8px 25px -4px rgba(79, 70, 229, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
 
 html.dark .btn-primary:hover:not(:disabled) {
-  background-color: #2563EB;
+  background: linear-gradient(135deg, #4338CA 0%, #4F46E5 50%, #7E22CE 100%);
+  box-shadow: 0 12px 30px -4px rgba(99, 102, 241, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
 }
 
+html.dark .btn-primary:disabled {
+  background: rgba(31, 41, 55, 0.6);
+  color: #6B7280;
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  box-shadow: none;
+}
+
+/* Secondary Button in Dark Mode */
 html.dark .btn-secondary {
-  background-color: #172133;
-  border-color: #283750;
-  color: #CBD5E1;
-}
-
-html.dark .btn-secondary:hover {
-  background-color: #1E2B42;
-  border-color: #3B4E70;
-  color: #FFFFFF;
-}
-
-html.dark header {
-  background-color: #101726;
-  border-color: #1E293B;
-}
-
-html.dark #admin-badge {
-  background-color: #172133;
-  border-color: #283750;
-}
-
-html.dark #admin-name {
+  background-color: rgba(31, 41, 55, 0.8);
+  border: 1px solid rgba(55, 65, 81, 0.8);
   color: #E2E8F0;
 }
 
-/* Custom Refined Scrollbar */
+html.dark .btn-secondary:hover {
+  background-color: rgba(55, 65, 81, 0.9);
+  border-color: rgba(75, 85, 99, 1);
+  color: #FFFFFF;
+}
+
+/* Dark Header with Glassmorphism */
+html.dark header {
+  background-color: rgba(3, 7, 18, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(31, 41, 55, 0.85);
+}
+
+html.dark #admin-badge {
+  background-color: rgba(17, 24, 39, 0.8);
+  border: 1px solid rgba(55, 65, 81, 0.8);
+}
+
+html.dark #admin-name {
+  color: #F3F4F6;
+}
+
+/* Custom Refined Scrollbar matching request_form.html */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #111827;
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #374151;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
-}
-html.dark ::-webkit-scrollbar-thumb {
-  background: #2D3B52;
-}
-html.dark ::-webkit-scrollbar-thumb:hover {
-  background: #415373;
+  background: #4B5563;
 }

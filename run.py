@@ -6,10 +6,23 @@ import time
 
 def log_output(process, prefix):
     """Dynamically read process stdout/stderr line-by-line and print with colored label."""
+    skip_trace = False
     for line in iter(process.stdout.readline, b''):
         decoded = line.decode('utf-8', errors='replace').rstrip()
-        if decoded:
-            print(f"{prefix} {decoded}", flush=True)
+        if not decoded:
+            continue
+        # Filter out benign Windows client SSE disconnect noise
+        if "_call_connection_lost" in decoded or "WinError 10054" in decoded:
+            skip_trace = True
+            continue
+        if skip_trace:
+            if "ConnectionResetError" in decoded:
+                skip_trace = False
+                continue
+            if decoded.strip().startswith("File ") or "proactor_events" in decoded or "shutdown" in decoded or "handle:" in decoded or "Traceback" in decoded:
+                continue
+            skip_trace = False
+        print(f"{prefix} {decoded}", flush=True)
 
 def free_port(port=8000):
     """If port is occupied on Windows, free it automatically to prevent [Errno 10048]."""

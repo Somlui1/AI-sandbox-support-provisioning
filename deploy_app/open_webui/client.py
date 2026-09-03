@@ -151,6 +151,21 @@ class OpenWebUIClient:
         """
         return self._request("POST", "api/v1/models/model/update", data=model_data)
 
+    def delete_model(self, model_id: str) -> Dict[str, Any]:
+        """
+        Delete a custom model preset in Open WebUI.
+        
+        Queries POST /api/v1/models/model/delete.
+        """
+        try:
+            return self._request("POST", "api/v1/models/model/delete", data={"id": model_id})
+        except Exception as err:
+            # Fallback to DELETE method if server requires DELETE
+            try:
+                return self._request("DELETE", "api/v1/models/model/delete", data={"id": model_id})
+            except Exception:
+                raise err
+
     def upload_file(self, file_path: str) -> Dict[str, Any]:
         """
         Upload a file to Open WebUI.

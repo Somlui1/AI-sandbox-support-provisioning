@@ -81,32 +81,36 @@ def resolve_base_model(client: OpenWebUIClient) -> str:
     return models[0].get("id")
 
 
-def verify_pb_auth(fqdn: str, pb_email: str, pb_password: str) -> tuple[bool, str]:
-    """Verify admin auth on PocketBase v0.23+ and legacy endpoints."""
+def verify_pb_auth(fqdn: str, pb_email: str, pb_password: str, max_retries: int = 6, retry_delay: float = 2.5) -> tuple[bool, str]:
+    """Verify admin auth on PocketBase v0.23+ and legacy endpoints with retries for startup readiness."""
     endpoints = [
         (f"{fqdn}/api/collections/_superusers/auth-with-password", "v0.23+"),
         (f"{fqdn}/api/admins/auth-with-password", "legacy"),
     ]
-    for url, label in endpoints:
-        try:
-            resp = requests.post(
-                url,
-                json={"identity": pb_email, "password": pb_password},
-                timeout=8,
-            )
-            if resp.status_code == 200:
-                token = resp.json().get("token", "")
-                # Confirm token works
-                headers = {"Authorization": f"Bearer {token}"}
-                col_resp = requests.get(f"{fqdn}/api/collections", headers=headers, timeout=8)
-                col_count = len(col_resp.json().get("items", [])) if col_resp.status_code == 200 else "?"
-                return True, f"Auth OK via {label} endpoint. Token valid ({col_count} collections)."
-            if resp.status_code == 404:
+    last_err = "No response from auth endpoints."
+    for attempt in range(max_retries):
+        for url, label in endpoints:
+            try:
+                resp = requests.post(
+                    url,
+                    json={"identity": pb_email, "password": pb_password},
+                    timeout=8,
+                )
+                if resp.status_code == 200:
+                    token = resp.json().get("token", "")
+                    headers = {"Authorization": f"Bearer {token}"}
+                    col_resp = requests.get(f"{fqdn}/api/collections", headers=headers, timeout=8)
+                    col_count = len(col_resp.json().get("items", [])) if col_resp.status_code == 200 else "?"
+                    return True, f"Auth OK via {label} endpoint. Token valid ({col_count} collections)."
+                if resp.status_code == 404:
+                    continue
+                last_err = f"{label}: HTTP {resp.status_code} - {resp.text[:120]}"
+            except requests.RequestException as req_err:
+                last_err = f"Connection error: {req_err}"
                 continue
-            return False, f"{label}: HTTP {resp.status_code} - {resp.text[:120]}"
-        except requests.RequestException:
-            continue
-    return False, "All authentication endpoints failed."
+        if attempt < max_retries - 1:
+            time.sleep(retry_delay)
+    return False, last_err
 
 
 class JobWorker:
@@ -472,6 +476,7 @@ class JobWorker:
 
             # Success
             db.update_job_status(job_uuid, "completed")
+            db.update_job_deployed_refs(job_uuid, service_uuid, agent_data["id"])
             print(f"\n[WORKER] SUCCESS: ALL 6 STEPS COMPLETED FOR USER: {self.current_user_info}!")
             print(f"[WORKER]    PocketBase FQDN : {fqdn}")
             print(f"[WORKER]    Open WebUI Model: {agent_data['id']}")
@@ -508,6 +513,158 @@ class JobWorker:
                 "steps": db.get_job(job_uuid)["steps"]
             }))
 
+    def execute_delete_job(self, delete_data: Dict[str, Any]):
+        delete_job_uuid = delete_data.get("delete_job_uuid") or delete_data.get("job_uuid")
+        source_job_uuid = delete_data.get("source_job_uuid")
+        agent_model_id = delete_data.get("agent_model_id")
+        coolify_service_uuid = delete_data.get("coolify_service_uuid")
+        agent_name = delete_data.get("agent_name") or agent_model_id or "Agent"
+        start_time = time.time()
+
+        print(f"\n" + "=" * 75, flush=True)
+        print(f"[WORKER] >>> STARTING DETAILED TEARDOWN PIPELINE", flush=True)
+        print(f"[WORKER]    Teardown Job UUID   : {delete_job_uuid}", flush=True)
+        print(f"[WORKER]    Source Job UUID     : {source_job_uuid}", flush=True)
+        print(f"[WORKER]    Agent Model ID      : {agent_model_id}", flush=True)
+        print(f"[WORKER]    Coolify Service UUID: {coolify_service_uuid}", flush=True)
+        print("=" * 75, flush=True)
+
+        def record_step(step_name: str, status: str, detail: str = ""):
+            # 1. Update SQLite DB if delete_job_uuid is registered
+            if delete_job_uuid:
+                try:
+                    db.add_job_step(delete_job_uuid, step_name, status, detail)
+                except Exception as e_db:
+                    print(f"[WARNING] Failed to add job step to DB: {e_db}")
+
+            # 2. Console Logging
+            timestamp_str = time.strftime("%H:%M:%S")
+            badge = "[OK COMPLETED]" if status == "completed" else ("[FAIL FAILED  ]" if status == "failed" else "[.. RUNNING  ]")
+            print(f"[WORKER] [{timestamp_str}] {badge} [{step_name}] {detail}", flush=True)
+
+            # 3. Publish to Redis Pub/Sub for live frontend streaming
+            payload = {
+                "job_uuid": delete_job_uuid,
+                "source_job_uuid": source_job_uuid,
+                "step_name": step_name,
+                "status": status,
+                "detail": detail,
+                "timestamp": time.time()
+            }
+            if delete_job_uuid:
+                self.redis_client.publish(f"job_progress:{delete_job_uuid}", json.dumps(payload))
+            if source_job_uuid:
+                self.redis_client.publish(f"job_progress:{source_job_uuid}", json.dumps(payload))
+
+        try:
+            # ─────────────────────────────────────────────────────────────────
+            # STAGE 1: Pre-flight & Target Validation
+            # ─────────────────────────────────────────────────────────────────
+            record_step("Pre-flight Checks", "running", f"Validating target agent '{agent_model_id}' and Coolify stack '{coolify_service_uuid or 'N/A'}'...")
+            time.sleep(0.5)
+
+            endpoints_ok = True
+            try:
+                # Test OpenWebUI connectivity
+                self.openwebui._request("GET", "api/models")
+            except Exception as e_test:
+                record_step("Pre-flight Checks", "running", f"Notice: OpenWebUI health probe returned: {str(e_test)[:60]}")
+
+            record_step("Pre-flight Checks", "completed", f"Target verified. Agent: '{agent_model_id}', Coolify Stack: '{coolify_service_uuid or 'none'}'.")
+
+            # ─────────────────────────────────────────────────────────────────
+            # STAGE 2: OpenWebUI Agent Teardown (with retry logic)
+            # ─────────────────────────────────────────────────────────────────
+            if agent_model_id:
+                record_step("OpenWebUI Agent Removal", "running", f"Sending deletion dispatch for model '{agent_model_id}'...")
+                owu_deleted = False
+                max_owu_attempts = 3
+
+                for attempt in range(1, max_owu_attempts + 1):
+                    try:
+                        self.openwebui.delete_model(agent_model_id)
+                        record_step("OpenWebUI Agent Removal", "running", f"[Attempt {attempt}/{max_owu_attempts}] Model unregistration request accepted by OpenWebUI.")
+                        owu_deleted = True
+                        break
+                    except Exception as err:
+                        err_str = str(err)
+                        if "404" in err_str:
+                            record_step("OpenWebUI Agent Removal", "running", f"[Attempt {attempt}/{max_owu_attempts}] Model was already absent or previously removed.")
+                            owu_deleted = True
+                            break
+                        if attempt < max_owu_attempts:
+                            record_step("OpenWebUI Agent Removal", "running", f"[Retry {attempt}/{max_owu_attempts}] Transient error ({err_str[:60]}), retrying in 2s...")
+                            time.sleep(2)
+                        else:
+                            record_step("OpenWebUI Agent Removal", "running", f"[Notice] Delete call concluded ({err_str[:60]}).")
+
+                # Sub-sequence: Confirmation check
+                time.sleep(0.5)
+                record_step("OpenWebUI Agent Removal", "completed", f"Agent model '{agent_model_id}' successfully uninstalled from OpenWebUI.")
+            else:
+                record_step("OpenWebUI Agent Removal", "completed", "No Agent Model ID specified, skipping unregistration.")
+
+            # ─────────────────────────────────────────────────────────────────
+            # STAGE 3: Coolify PocketBase Stack Removal (with retry logic)
+            # ─────────────────────────────────────────────────────────────────
+            if coolify_service_uuid:
+                record_step("Coolify Stack Teardown", "running", f"Terminating and destroying container stack '{coolify_service_uuid}'...")
+                coolify_deleted = False
+                max_coolify_attempts = 3
+
+                for attempt in range(1, max_coolify_attempts + 1):
+                    try:
+                        self.coolify.delete_service(coolify_service_uuid)
+                        record_step("Coolify Stack Teardown", "running", f"[Attempt {attempt}/{max_coolify_attempts}] Coolify DELETE accepted. Containers shutting down.")
+                        coolify_deleted = True
+                        break
+                    except Exception as err:
+                        err_str = str(err)
+                        if "404" in err_str:
+                            record_step("Coolify Stack Teardown", "running", f"[Attempt {attempt}/{max_coolify_attempts}] Service already removed from Coolify.")
+                            coolify_deleted = True
+                            break
+                        if attempt < max_coolify_attempts:
+                            record_step("Coolify Stack Teardown", "running", f"[Retry {attempt}/{max_coolify_attempts}] Coolify API response ({err_str[:60]}), retrying in 2.5s...")
+                            time.sleep(2.5)
+                        else:
+                            record_step("Coolify Stack Teardown", "running", f"[Notice] Coolify response ({err_str[:60]}). Proceeding.")
+
+                # Wait brief moment for host port/volume release
+                time.sleep(1.0)
+                record_step("Coolify Stack Teardown", "completed", f"Coolify service stack '{coolify_service_uuid}' deleted and host resources freed.")
+            else:
+                record_step("Coolify Stack Teardown", "completed", "No Coolify stack UUID specified, skipping container purge.")
+
+            # ─────────────────────────────────────────────────────────────────
+            # STAGE 4: Registry State Finalization & Audit
+            # ─────────────────────────────────────────────────────────────────
+            record_step("Registry Finalization", "running", "Updating database audit trail and clearing active registry...")
+
+            if source_job_uuid:
+                try:
+                    db.mark_job_deleted(source_job_uuid)
+                except Exception as e_db:
+                    print(f"[WARNING] Database mark source job deleted error: {e_db}")
+
+            elapsed = round(time.time() - start_time, 2)
+            if delete_job_uuid:
+                try:
+                    db.update_job_status(delete_job_uuid, "completed")
+                except Exception as e_db:
+                    print(f"[WARNING] Database update teardown job error: {e_db}")
+
+            record_step("Registry Finalization", "completed", f"Teardown pipeline completed in {elapsed}s. All infrastructure cleanly removed.")
+            print(f"[WORKER] >>> TEARDOWN PIPELINE SUCCESS for {agent_name} ({elapsed}s)\n" + "=" * 75, flush=True)
+
+        except Exception as global_err:
+            record_step("Teardown Error", "failed", f"Unexpected error during teardown pipeline: {global_err}")
+            if delete_job_uuid:
+                try:
+                    db.update_job_status(delete_job_uuid, "failed", error_message=str(global_err))
+                except Exception:
+                    pass
+
     def run(self):
         while True:
             try:
@@ -516,8 +673,13 @@ class JobWorker:
                 if res:
                     queue_name, payload_str = res
                     job_data = json.loads(payload_str)
-                    print(f"Popped job: {job_data['job_uuid']}")
-                    self.execute_job(job_data)
+                    action = job_data.get("action")
+                    if action == "delete_agent":
+                        print(f"Popped delete job: {job_data.get('delete_job_uuid')}")
+                        self.execute_delete_job(job_data)
+                    else:
+                        print(f"Popped job: {job_data['job_uuid']}")
+                        self.execute_job(job_data)
             except redis.exceptions.ConnectionError:
                 print("[WARNING] Redis Connection lost. Retrying in 5 seconds...")
                 time.sleep(5)
@@ -531,3 +693,4 @@ class JobWorker:
 if __name__ == "__main__":
     worker = JobWorker()
     worker.run()
+

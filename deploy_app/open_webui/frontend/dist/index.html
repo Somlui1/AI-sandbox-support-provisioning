@@ -1,23 +1,34 @@
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Provisioning Orchestrator - Open WebUI & Coolify</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+    <title>AICO Provisioning Portal - AI Sandbox & Open WebUI</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              gray: {
+                850: '#1f2937',
+                900: '#111827',
+                950: '#030712',
+              }
+            }
+          }
+        }
       }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/assets/index-DEKBuU7-.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DkvmLPff.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/assets/index-DrQ99NyU.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DQY1IU7f.css">
   </head>
-  <body class="h-full antialiased">
+  <body class="h-full antialiased selection:bg-indigo-500/30">
     <div id="root" class="h-full flex flex-col"></div>
   </body>
 </html>

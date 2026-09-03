@@ -21,6 +21,11 @@ if sys.platform == "win32":
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
+    try:
+        # Use selector event loop on Windows to eliminate [WinError 10054] connection lost noise
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    except Exception:
+        pass
 
 # Add parent directory to path to load packages
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
@@ -84,6 +89,39 @@ async def request_form_page(request):
             with open(abs_path, "r", encoding="utf-8") as f:
                 return HTMLResponse(f.read())
     return HTMLResponse("<h1>Request form not found.</h1>", status_code=404)
+
+
+async def email_preview_page(request):
+    """Serve live interactive preview of the AI Sandbox Approval Email Template."""
+    candidates = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "email_approval_template.html"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates", "email_approval_template.html"),
+    ]
+    for path in candidates:
+        abs_path = os.path.abspath(path)
+        if os.path.exists(abs_path):
+            with open(abs_path, "r", encoding="utf-8") as f:
+                html = f.read()
+
+            params = request.query_params
+            user_name = params.get("user_name", "Wajeepradit Prompan (AH)")
+            user_email = params.get("user_email", "wajeepradit.p@aapico.com")
+            department = params.get("department", "Digital Innovation")
+            project_name = params.get("project_name", "Smart Factory AI Copilot")
+            fqdn = params.get("fqdn", "http://pb-wajeepraditp.10.10.3.111.sslip.io")
+            agent_model_id = params.get("agent_model_id", "pocketbase-agent-wajeepraditp")
+
+            html = html.replace("{{ user_name }}", user_name)
+            html = html.replace("{{ user_email }}", user_email)
+            html = html.replace("{{ department | default('Digital Innovation') }}", department)
+            html = html.replace("{{ project_name | default('AI Sandbox Environment') }}", project_name)
+            html = html.replace("{{ fqdn }}", fqdn)
+            html = html.replace("{{ fqdn | default('https://pb-sandbox.aapico.com') }}", fqdn)
+            html = html.replace("{{ agent_model_id | default('pocketbase-agent') }}", agent_model_id)
+            html = html.replace("{{ openwebui_url | default('http://10.10.3.111:3000') }}", "http://10.10.3.111:3000")
+            html = html.replace("{{ job_uuid | default('AUTO-GEN') }}", "4f022b79-4596-4fbe-bbe2-bc7e1f0ce441")
+            return HTMLResponse(html)
+    return HTMLResponse("<h1>Email template not found</h1>", status_code=404)
 
 
 async def validate_auth_api(request):
@@ -461,6 +499,27 @@ async def get_jobs(request):
     try:
         jobs = db.get_all_jobs()
         return JSONResponse(jobs)
+    except Exception as e:
+        return JSONResponse({"detail": str(e)}, status_code=500)
+
+
+async def clear_jobs_api(request):
+    """Clear all historical deployment job logs."""
+    try:
+        count = db.delete_all_jobs()
+        return JSONResponse({"status": "success", "deleted_count": count})
+    except Exception as e:
+        return JSONResponse({"detail": str(e)}, status_code=500)
+
+
+async def delete_single_job_api(request):
+    """Delete a single job log by UUID."""
+    try:
+        job_uuid = request.path_params.get("job_uuid")
+        ok = db.delete_job(job_uuid)
+        if ok:
+            return JSONResponse({"status": "success", "job_uuid": job_uuid})
+        return JSONResponse({"detail": f"Job {job_uuid} not found"}, status_code=404)
     except Exception as e:
         return JSONResponse({"detail": str(e)}, status_code=500)
 
@@ -912,9 +971,132 @@ async def deploy_sandbox_request(request):
     })
 
 
+async def get_deployed_agents_api(request):
+    """Retrieve list of agents deployed specifically via this orchestrator project, cross-referenced with active models in OpenWebUI."""
+    try:
+        # 1. Fetch active models from OpenWebUI API
+        client = get_client(request)
+        active_model_ids = set()
+        owu_models_map = {}
+        try:
+            url = f"{client.base_url}/api/models"
+            resp = requests.get(url, headers=client.headers, timeout=6)
+            if resp.status_code == 200:
+                data = resp.json().get("data", [])
+                for m in data:
+                    mid = m.get("id")
+                    if mid:
+                        active_model_ids.add(mid)
+                        owu_models_map[mid] = m
+        except Exception as e_owu:
+            print(f"[WARNING] Could not fetch active models from OpenWebUI: {e_owu}")
+
+        # 2. Query project-deployed agents from Database
+        db_agents = db.get_deployed_agents()
+
+        # 3. Filter: MUST actually exist in OpenWebUI right now, and deduplicate by agent_model_id (latest job wins)
+        verified_agents = []
+        seen_agent_ids = set()
+
+        for a in db_agents:
+            model_id = a.get("agent_model_id")
+            if not model_id:
+                continue
+
+            # Only include if actually present in OpenWebUI
+            if active_model_ids and model_id not in active_model_ids:
+                continue
+
+            # Deduplicate by model_id to show only the latest active instance
+            if model_id in seen_agent_ids:
+                continue
+            seen_agent_ids.add(model_id)
+
+            # Enrich with real-time OpenWebUI model name if available
+            owu_info = owu_models_map.get(model_id)
+            if owu_info and owu_info.get("name"):
+                a["agent_name"] = owu_info.get("name")
+
+            verified_agents.append(a)
+
+        return JSONResponse(verified_agents)
+    except Exception as e:
+        return JSONResponse({"detail": str(e)}, status_code=500)
+
+
+async def delete_deployed_agent_api(request):
+    """Queue teardown job to delete OpenWebUI agent and Coolify PocketBase container."""
+    try:
+        job_uuid = request.path_params.get("job_uuid")
+        job = db.get_job(job_uuid)
+        if not job:
+            return JSONResponse({"detail": f"Job {job_uuid} not found"}, status_code=404)
+
+        config = job.get("config") or {}
+        owu_cfg = config.get("openwebui") or config.get("openwebui_agent") or {}
+
+        agent_model_id = job.get("agent_model_id") or owu_cfg.get("agent_id") or config.get("agent_id")
+        agent_name = owu_cfg.get("agent_name") or config.get("agent_name") or f"Agent - {job.get('user_name')}"
+        coolify_service_uuid = job.get("coolify_service_uuid")
+
+        # If coolify_service_uuid is not in column, check steps
+        if not coolify_service_uuid:
+            steps = job.get("steps") or []
+            for s in steps:
+                detail = s.get("detail", "")
+                if "Service created with UUID:" in detail:
+                    parts = detail.split("Service created with UUID:")
+                    if len(parts) > 1:
+                        uuid_part = parts[1].split(".")[0].strip()
+                        if uuid_part:
+                            coolify_service_uuid = uuid_part
+                            break
+
+        delete_job_uuid = str(uuid.uuid4())
+        task_payload = {
+            "job_type": "teardown",
+            "action": "delete_agent",
+            "delete_job_uuid": delete_job_uuid,
+            "job_uuid": delete_job_uuid,
+            "source_job_uuid": job_uuid,
+            "agent_model_id": agent_model_id,
+            "agent_name": agent_name,
+            "coolify_service_uuid": coolify_service_uuid,
+            "fqdn": job.get("fqdn")
+        }
+
+        # Create persistent teardown job record in SQLite for inspection and live tracking
+        db.create_job(
+            job_uuid=delete_job_uuid,
+            user_id=job.get("user_id", "admin"),
+            user_email=job.get("user_email", "admin@aapico.com"),
+            user_name=job.get("user_name", "System"),
+            config=task_payload
+        )
+        db.update_job_status(
+            delete_job_uuid,
+            status="pending",
+            service_name=f"[Teardown] {agent_name}",
+            fqdn=job.get("fqdn")
+        )
+
+        redis_client.rpush(REDIS_QUEUE_NAME, json.dumps(task_payload))
+
+        return JSONResponse({
+            "status": "queued",
+            "delete_job_uuid": delete_job_uuid,
+            "source_job_uuid": job_uuid,
+            "agent_model_id": agent_model_id,
+            "agent_name": agent_name
+        })
+    except Exception as e:
+        return JSONResponse({"detail": str(e)}, status_code=500)
+
+
 routes = [
     Route("/", homepage),
     Route("/request", request_form_page),
+    Route("/email-preview", email_preview_page, methods=["GET"]),
     Route("/api/login", login_api, methods=["GET", "POST"]),
     Route("/api/auth/validate", validate_auth_api, methods=["GET", "POST"]),
     Route("/api/auth/ldap-login", ldap_login_api, methods=["POST"]),
@@ -932,11 +1114,16 @@ routes = [
     Route("/api/owu/models", get_owu_models, methods=["GET"]),
     Route("/api/jobs", get_jobs, methods=["GET"]),
     Route("/api/v1/jobs", get_jobs, methods=["GET"]),
+    Route("/api/jobs/clear", clear_jobs_api, methods=["POST", "DELETE"]),
+    Route("/api/jobs/{job_uuid}/delete", delete_single_job_api, methods=["POST", "DELETE"]),
     Route("/api/jobs/{job_uuid}", get_job_by_uuid, methods=["GET"]),
+    Route("/api/jobs/{job_uuid}", delete_single_job_api, methods=["DELETE"]),
     Route("/api/jobs/create", create_job, methods=["POST"]),
     Route("/api/jobs/provision", create_job, methods=["POST"]),
     Route("/api/jobs/{job_uuid}/events", job_events, methods=["GET"]),
     Route("/api/jobs/{job_uuid}/stream", job_events, methods=["GET"]),
+    Route("/api/deployed-agents", get_deployed_agents_api, methods=["GET"]),
+    Route("/api/deployed-agents/{job_uuid}/delete", delete_deployed_agent_api, methods=["POST"]),
     Route("/api/sandbox/requests", get_sandbox_requests, methods=["GET"]),
     Route("/api/sandbox/requests", create_sandbox_request, methods=["POST"]),
     Route("/api/sandbox/requests/{req_id}/approve", approve_sandbox_request, methods=["POST"]),

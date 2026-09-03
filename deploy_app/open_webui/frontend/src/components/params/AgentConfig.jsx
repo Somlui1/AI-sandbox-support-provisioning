@@ -18,26 +18,26 @@ export default function AgentConfig() {
   } = useApp();
 
   return (
-    <div className="saas-card p-6 space-y-5">
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+    <div className="saas-card p-6 space-y-5 bg-white/90 dark:bg-gray-900/65 backdrop-blur-xl border border-slate-200/80 dark:border-gray-800/80">
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-gray-800/80">
         <div className="flex items-center space-x-2.5">
-          <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-semibold text-xs border border-slate-200 dark:border-slate-700">
+          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 text-white flex items-center justify-center font-bold text-xs shadow-sm shadow-purple-500/20">
             B
           </div>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Open WebUI Model</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Open WebUI Model</h3>
         </div>
-        <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Agent Blueprint</span>
+        <span className="text-[11px] font-semibold text-purple-600 dark:text-purple-400">Agent Blueprint</span>
       </div>
 
       {/* Group 1: Blueprint & Model Configuration */}
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1.5">
               Blueprint
             </label>
             <select
-              className="w-full saas-input px-3 py-2 text-xs font-mono bg-white dark:bg-[#0E1522]"
+              className="w-full saas-input px-3 py-2 text-xs font-mono bg-white dark:bg-gray-900/80"
               value={agentTemplate}
               onChange={(e) => handleTemplateChange(e.target.value)}
             >
@@ -56,7 +56,7 @@ export default function AgentConfig() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1.5">
               Agent Name
             </label>
             <input
@@ -71,11 +71,11 @@ export default function AgentConfig() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1.5">
               Base Model
             </label>
             <select
-              className="w-full saas-input px-3 py-2 text-xs font-mono bg-white dark:bg-[#0E1522]"
+              className="w-full saas-input px-3 py-2 text-xs font-mono bg-white dark:bg-gray-900/80"
               value={agentBaseModel}
               onChange={(e) => setAgentBaseModel(e.target.value)}
             >
@@ -92,7 +92,7 @@ export default function AgentConfig() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1.5">
               Tool IDs
             </label>
             <input

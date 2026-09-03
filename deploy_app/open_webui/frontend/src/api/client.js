@@ -110,6 +110,19 @@ export async function createJob(payload) {
   });
 }
 
+export async function clearJobs() {
+  return request('/api/jobs/clear', {
+    method: 'POST',
+  });
+}
+
+export async function deleteJob(jobUuid) {
+  return request(`/api/jobs/${jobUuid}/delete`, {
+    method: 'POST',
+  });
+}
+
+
 /**
  * Create an SSE EventSource for real-time job tracking.
  * @param {string} jobUuid
@@ -119,3 +132,16 @@ export function createJobEventSource(jobUuid) {
   const token = getToken();
   return new EventSource(`${API_BASE}/api/jobs/${jobUuid}/stream?token=${encodeURIComponent(token)}`);
 }
+
+// ── Deployed Agents ─────────────────────────────────────────────────────────
+
+export async function getDeployedAgents() {
+  return request('/api/deployed-agents');
+}
+
+export async function deleteDeployedAgent(jobUuid) {
+  return request(`/api/deployed-agents/${jobUuid}/delete`, {
+    method: 'POST',
+  });
+}
+

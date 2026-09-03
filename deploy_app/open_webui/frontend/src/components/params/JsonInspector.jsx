@@ -53,25 +53,25 @@ export default function JsonInspector() {
   };
 
   return (
-    <div className="saas-card p-4">
+    <div className="saas-card p-4 bg-white/90 dark:bg-gray-900/65 backdrop-blur-xl border border-slate-200/80 dark:border-gray-800/80">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
+        className="flex items-center justify-between w-full text-xs font-semibold text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
       >
         <span className="flex items-center space-x-2">
-          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          <svg className="w-4 h-4 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
           </svg>
           <span>Inspect Services Payload</span>
         </span>
-        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+        <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
           {isOpen ? 'Hide ↑' : 'Show ↓'}
         </span>
       </button>
       {isOpen && (
-        <div className="mt-3">
-          <pre className="bg-slate-900 dark:bg-[#0E1522] p-3.5 rounded-xl text-[11px] font-mono text-slate-200 overflow-x-auto max-h-52 select-all border border-slate-800">
+        <div className="mt-3.5 fade-in">
+          <pre className="bg-slate-900 dark:bg-[#030712] p-4 rounded-2xl text-[11px] font-mono text-indigo-300 overflow-x-auto max-h-56 select-all border border-slate-800 dark:border-gray-800 shadow-inner">
             {JSON.stringify(payload, null, 2)}
           </pre>
         </div>

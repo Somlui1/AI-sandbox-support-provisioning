@@ -21,7 +21,7 @@ export default function Stepper() {
 
   return (
     <div className="mb-8">
-      <div className="saas-card p-3 sm:p-4">
+      <div className="saas-card p-3.5 sm:p-4 bg-white/90 dark:bg-gray-900/65 backdrop-blur-xl border border-slate-200/80 dark:border-gray-800/80">
         <div className="flex items-center justify-between w-full">
           {steps.map((step, idx) => {
             const isCompleted =
@@ -29,25 +29,27 @@ export default function Stepper() {
             const isActive = step.id === currentStep;
             const isClickable = isCompleted || isActive || (idx <= currentIdx + 1 && selectedUser);
 
-            let badgeClass = 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-medium';
+            let badgeClass = 'bg-slate-100 dark:bg-gray-800 text-slate-400 dark:text-gray-500 font-medium border border-transparent dark:border-gray-700/60';
             let numContent = step.num;
-            let textClass = 'text-slate-400 dark:text-slate-500 font-normal';
+            let textClass = 'text-slate-400 dark:text-gray-500 font-normal';
 
             if (isActive) {
-              badgeClass = 'bg-slate-900 dark:bg-blue-600 text-white font-medium shadow-xs';
-              textClass = 'text-slate-900 dark:text-slate-100 font-semibold';
+              badgeClass = 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold shadow-md shadow-indigo-500/30 border border-white/20';
+              textClass = 'text-slate-900 dark:text-white font-bold';
             } else if (isCompleted) {
-              badgeClass = 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-semibold';
+              badgeClass = 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30';
               numContent = (
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
                 </svg>
               );
-              textClass = 'text-slate-700 dark:text-slate-300 font-medium';
+              textClass = 'text-slate-700 dark:text-gray-300 font-medium';
             }
 
             const showLine = idx < steps.length - 1;
-            const lineClass = idx < currentIdx ? 'bg-slate-900 dark:bg-blue-600' : 'bg-slate-200 dark:bg-slate-800';
+            const lineClass = idx < currentIdx 
+              ? 'bg-gradient-to-r from-indigo-500 to-purple-600' 
+              : 'bg-slate-200 dark:bg-gray-800';
 
             return (
               <div

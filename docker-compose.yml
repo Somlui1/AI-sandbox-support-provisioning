@@ -5,10 +5,9 @@ services:
       dockerfile: Dockerfile
     container_name: provisioning_orchestrator
     restart: unless-stopped
-    expose:
-      - "8000"
+    ports:
+      - "8000:8000"
     environment:
-      - SERVICE_FQDN_ORCHESTRATOR_8000
       - PORT=8000
       - REDIS_URL=redis://redis:6379/0
       - PYTHONUNBUFFERED=1
@@ -22,7 +21,6 @@ services:
         condition: service_healthy
     networks:
       - provisioning_net
-      - coolify
 
   redis:
     image: redis:7-alpine
@@ -32,7 +30,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -49,5 +47,3 @@ networks:
   provisioning_net:
     name: provisioning_network
     driver: bridge
-  coolify:
-    external: true

@@ -43,68 +43,68 @@ export default function AccessPermissions() {
   };
 
   return (
-    <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-2.5">
+    <div className="border-t border-slate-100 dark:border-gray-800/80 pt-4 space-y-2.5">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Access Permissions</label>
-        <span className="text-[11px] text-slate-400 dark:text-slate-500">RBAC</span>
+        <label className="text-xs font-semibold text-slate-700 dark:text-gray-300">Access Permissions</label>
+        <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">RBAC</span>
       </div>
 
       {/* Structured Table Container */}
-      <div className="w-full bg-white dark:bg-[#0E1522] border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+      <div className="w-full bg-white dark:bg-gray-900/80 border border-slate-200 dark:border-gray-700/80 rounded-2xl overflow-hidden shadow-xs">
         {/* Table Header */}
-        <div className="grid grid-cols-12 px-3.5 py-2 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+        <div className="grid grid-cols-12 px-3.5 py-2.5 bg-slate-50 dark:bg-gray-800/80 border-b border-slate-200 dark:border-gray-700/80 text-[11px] font-bold text-slate-500 dark:text-gray-400">
           <div className="col-span-7">User</div>
           <div className="col-span-3 text-center">Permissions</div>
           <div className="col-span-2 text-right">Status</div>
         </div>
 
         {/* Rows Container */}
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+        <div className="divide-y divide-slate-100 dark:divide-gray-800/80">
           {/* Target User Row */}
-          <div className="grid grid-cols-12 items-center px-3.5 py-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition text-xs">
+          <div className="grid grid-cols-12 items-center px-3.5 py-2.5 hover:bg-slate-50/50 dark:hover:bg-gray-800/40 transition text-xs">
             <div className="col-span-7 flex items-center space-x-2.5 min-w-0 pr-2">
-              <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-[11px] flex items-center justify-center flex-shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-[11px] flex items-center justify-center flex-shrink-0 shadow-xs">
                 {(selectedUser?.name || 'U').substring(0, 1).toUpperCase()}
               </div>
               <div className="min-w-0 truncate">
-                <div className="font-medium text-slate-900 dark:text-slate-100 truncate">
+                <div className="font-bold text-slate-900 dark:text-white truncate">
                   {selectedUser?.name || 'Target User'}
                 </div>
-                <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate font-mono">
+                <div className="text-[10px] text-slate-400 dark:text-gray-400 truncate font-mono">
                   {selectedUser?.email || 'Target User'}
                 </div>
               </div>
             </div>
-            <div className="col-span-3 flex justify-center space-x-1">
-              <span className="px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md">Read</span>
-              <span className="px-1.5 py-0.5 text-[10px] font-medium bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-md">Write</span>
+            <div className="col-span-3 flex justify-center space-x-1.5">
+              <span className="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 dark:bg-gray-800 text-slate-700 dark:text-gray-300 rounded-md">Read</span>
+              <span className="px-2 py-0.5 text-[10px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 rounded-md">Write</span>
             </div>
             <div className="col-span-2 text-right">
-              <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">Locked</span>
+              <span className="text-[10px] font-semibold text-slate-400 dark:text-gray-500">Locked</span>
             </div>
           </div>
 
           {/* Admin User Row */}
-          <div className="grid grid-cols-12 items-center px-3.5 py-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition text-xs">
+          <div className="grid grid-cols-12 items-center px-3.5 py-2.5 hover:bg-slate-50/50 dark:hover:bg-gray-800/40 transition text-xs">
             <div className="col-span-7 flex items-center space-x-2.5 min-w-0 pr-2">
-              <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-[11px] flex items-center justify-center flex-shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 text-white font-bold text-[11px] flex items-center justify-center flex-shrink-0 shadow-xs">
                 A
               </div>
               <div className="min-w-0 truncate">
-                <div className="font-medium text-slate-900 dark:text-slate-100 truncate">
+                <div className="font-bold text-slate-900 dark:text-white truncate">
                   {currentUserSession?.name || 'Admin'}
                 </div>
-                <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate font-mono">
+                <div className="text-[10px] text-slate-400 dark:text-gray-400 truncate font-mono">
                   {currentUserSession?.email || 'Admin User'}
                 </div>
               </div>
             </div>
-            <div className="col-span-3 flex justify-center space-x-1">
-              <span className="px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md">Read</span>
-              <span className="px-1.5 py-0.5 text-[10px] font-medium bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-md">Write</span>
+            <div className="col-span-3 flex justify-center space-x-1.5">
+              <span className="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 dark:bg-gray-800 text-slate-700 dark:text-gray-300 rounded-md">Read</span>
+              <span className="px-2 py-0.5 text-[10px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 rounded-md">Write</span>
             </div>
             <div className="col-span-2 text-right">
-              <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">Locked</span>
+              <span className="text-[10px] font-semibold text-slate-400 dark:text-gray-500">Locked</span>
             </div>
           </div>
 
@@ -114,27 +114,27 @@ export default function AccessPermissions() {
             return (
               <div
                 key={g.user_id || idx}
-                className="grid grid-cols-12 items-center px-3.5 py-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition text-xs"
+                className="grid grid-cols-12 items-center px-3.5 py-2.5 hover:bg-slate-50/50 dark:hover:bg-gray-800/40 transition text-xs"
               >
                 <div className="col-span-7 flex items-center space-x-2.5 min-w-0 pr-2">
-                  <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-[11px] flex items-center justify-center flex-shrink-0">
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-gray-800 text-slate-700 dark:text-gray-300 font-bold text-[11px] flex items-center justify-center flex-shrink-0">
                     {initial}
                   </div>
                   <div className="min-w-0 truncate">
-                    <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{g.user_name}</div>
-                    <div className="text-[10px] text-slate-400 dark:text-slate-500">Custom Grant</div>
+                    <div className="font-bold text-slate-900 dark:text-white truncate">{g.user_name}</div>
+                    <div className="text-[10px] text-slate-400 dark:text-gray-400">Custom Grant</div>
                   </div>
                 </div>
-                <div className="col-span-3 flex justify-center space-x-1">
+                <div className="col-span-3 flex justify-center space-x-1.5">
                   {g.permission === 'read_write' ? (
                     <>
-                      <span className="px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md">Read</span>
-                      <span className="px-1.5 py-0.5 text-[10px] font-medium bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-md">Write</span>
+                      <span className="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 dark:bg-gray-800 text-slate-700 dark:text-gray-300 rounded-md">Read</span>
+                      <span className="px-2 py-0.5 text-[10px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 rounded-md">Write</span>
                     </>
                   ) : g.permission === 'read' ? (
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md">Read</span>
+                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 dark:bg-gray-800 text-slate-700 dark:text-gray-300 rounded-md">Read</span>
                   ) : (
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-md">Write</span>
+                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 rounded-md">Write</span>
                   )}
                 </div>
                 <div className="col-span-2 text-right">
@@ -142,10 +142,10 @@ export default function AccessPermissions() {
                     type="button"
                     onClick={() => removeCustomGrant(idx)}
                     title="Remove permission grant"
-                    className="p-1 text-slate-400 hover:text-rose-600 rounded transition cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-rose-500 rounded transition cursor-pointer"
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>
@@ -155,9 +155,9 @@ export default function AccessPermissions() {
         </div>
 
         {/* Add Grant Controls */}
-        <div className="p-2.5 bg-slate-50/70 dark:bg-slate-800/40 border-t border-slate-200 dark:border-slate-700 flex items-center space-x-2 text-xs">
+        <div className="p-3 bg-slate-50/70 dark:bg-gray-800/50 border-t border-slate-200 dark:border-gray-700/80 flex items-center space-x-2 text-xs">
           <select
-            className="flex-grow saas-input px-2.5 py-1.5 text-xs bg-white dark:bg-[#0E1522]"
+            className="flex-grow saas-input px-3 py-1.5 text-xs bg-white dark:bg-gray-900/90"
             value={selectedAddUserId}
             onChange={(e) => setSelectedAddUserId(e.target.value)}
           >
@@ -169,7 +169,7 @@ export default function AccessPermissions() {
             ))}
           </select>
           <select
-            className="w-28 saas-input px-2.5 py-1.5 text-xs bg-white dark:bg-[#0E1522]"
+            className="w-32 saas-input px-3 py-1.5 text-xs bg-white dark:bg-gray-900/90"
             value={selectedAddPerm}
             onChange={(e) => setSelectedAddPerm(e.target.value)}
           >
@@ -180,7 +180,7 @@ export default function AccessPermissions() {
           <button
             type="button"
             onClick={handleAdd}
-            className="px-3 py-1.5 btn-primary text-xs whitespace-nowrap cursor-pointer"
+            className="px-4 py-1.5 btn-primary text-xs whitespace-nowrap cursor-pointer"
           >
             Add
           </button>

@@ -4,16 +4,19 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Stepper from './components/Stepper';
 import LoginModal from './components/LoginModal';
+import AnimatedBackground from './components/AnimatedBackground';
 import StepSelectUser from './components/steps/StepSelectUser';
 import StepSyncUser from './components/steps/StepSyncUser';
 import StepParams from './components/steps/StepParams';
 import StepDeploy from './components/steps/StepDeploy';
 import DeploymentHistory from './components/DeploymentHistory';
 import SandboxPortal from './components/SandboxPortal';
+import DeployedAgents from './components/DeployedAgents';
 
 export default function App() {
   const { currentStep, handleSelectFromSandbox } = useApp();
-  const [activeMenu, setActiveMenu] = useState('deploy'); // 'deploy' | 'history' | 'sandbox'
+  const [activeMenu, setActiveMenu] = useState('deploy'); // 'deploy' | 'agents' | 'history' | 'sandbox'
+  const [inspectJobUuid, setInspectJobUuid] = useState(null);
 
   const token = localStorage.getItem('openwebui_admin_token') || '';
 
@@ -53,7 +56,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col antialiased bg-slate-50 dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 transition-colors duration-200">
+    <div className="min-h-screen flex flex-col antialiased bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-gray-100 transition-colors duration-200 relative selection:bg-indigo-500/30">
+      {/* Animated Glowing Blobs & Grid Pattern Background */}
+      <AnimatedBackground />
+
       {/* Login Authentication Dialog */}
       <LoginModal />
 
@@ -61,14 +67,14 @@ export default function App() {
       <Header />
 
       {/* Main Layout with Left Sidebar and Right Workspace */}
-      <div className="flex-grow flex flex-col lg:flex-row max-w-[1400px] w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 gap-6 sm:gap-8">
+      <div className="relative z-10 flex-grow flex flex-col lg:flex-row max-w-[1400px] w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 gap-6 sm:gap-8">
         {/* Left Sidebar Menu */}
         <Sidebar activeMenu={activeMenu} onSelectMenu={setActiveMenu} />
 
         {/* Right Workspace Area */}
         <main className="flex-1 min-w-0 flex flex-col">
           {activeMenu === 'deploy' && (
-            <div className="space-y-6 flex flex-col flex-grow">
+            <div className="space-y-6 flex flex-col flex-grow fade-in">
               <Stepper />
               {currentStep === 'select' && <StepSelectUser />}
               {currentStep === 'sync'   && <StepSyncUser />}
@@ -77,16 +83,32 @@ export default function App() {
             </div>
           )}
 
+          {activeMenu === 'agents' && (
+            <div className="fade-in flex-grow flex flex-col">
+              <DeployedAgents
+                onGoToDeploy={() => setActiveMenu('deploy')}
+                onInspectJob={(jobUuid) => {
+                  setInspectJobUuid(jobUuid);
+                  setActiveMenu('history');
+                }}
+              />
+            </div>
+          )}
+
           {activeMenu === 'history' && (
-            <DeploymentHistory token={token} />
+            <div className="fade-in flex-grow flex flex-col">
+              <DeploymentHistory token={token} initialJobUuid={inspectJobUuid} />
+            </div>
           )}
 
           {activeMenu === 'sandbox' && (
-            <SandboxPortal
-              adminToken={token}
-              onGoToHistory={() => setActiveMenu('history')}
-              onApproveAndRedirect={handleApproveRedirect}
-            />
+            <div className="fade-in flex-grow flex flex-col">
+              <SandboxPortal
+                adminToken={token}
+                onGoToHistory={() => setActiveMenu('history')}
+                onApproveAndRedirect={handleApproveRedirect}
+              />
+            </div>
           )}
         </main>
       </div>
