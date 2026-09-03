@@ -6,7 +6,7 @@ services:
     container_name: provisioning_orchestrator
     restart: unless-stopped
     environment:
-      - PORT3000
+      - PORT=8000
       - REDIS_URL=redis://redis:6379/0
       - PYTHONUNBUFFERED=1
     env_file:
