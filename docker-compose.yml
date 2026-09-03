@@ -23,9 +23,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=coolify"
-      - "traefik.http.routers.orchestrator-router.rule=Host(`provisioning.10.10.3.111.sslip.io`)"
-      - "traefik.http.routers.orchestrator-router.entrypoints=http"
-      - "traefik.http.services.orchestrator-service.loadbalancer.server.port=8000"
+      - "traefik.http.routers.orchestrator.rule=Host(`provisioning.10.10.3.111.sslip.io`)"
+      - "traefik.http.routers.orchestrator.entryPoints=http"
+      - "traefik.http.services.orchestrator.loadbalancer.server.port=8000"
     networks:
       - provisioning_net
       - coolify
