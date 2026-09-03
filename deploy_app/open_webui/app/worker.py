@@ -680,6 +680,9 @@ class JobWorker:
                     else:
                         print(f"Popped job: {job_data['job_uuid']}")
                         self.execute_job(job_data)
+            except (redis.exceptions.TimeoutError, TimeoutError):
+                # Normal blpop idle timeout when queue has no pending jobs
+                continue
             except redis.exceptions.ConnectionError:
                 print("[WARNING] Redis Connection lost. Retrying in 5 seconds...")
                 time.sleep(5)
@@ -688,6 +691,7 @@ class JobWorker:
                 break
             except Exception as e:
                 print(f"[ERROR] Worker error: {e}")
+                time.sleep(1)
 
 
 if __name__ == "__main__":

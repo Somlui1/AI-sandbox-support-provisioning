@@ -40,7 +40,7 @@ def get_redis_client():
     """Attempt connecting to real Redis; fall back to FileRedis if offline."""
     try:
         import redis
-        client = redis.from_url(REDIS_URL, socket_timeout=2.0)
+        client = redis.from_url(REDIS_URL, socket_connect_timeout=3.0, socket_timeout=None)
         client.ping()
         return client
     except Exception as e:
