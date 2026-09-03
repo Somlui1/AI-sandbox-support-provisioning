@@ -47,3 +47,6 @@ networks:
   provisioning_net:
     name: provisioning_network
     driver: bridge
+  coolify:
+    # ประกาศต่อเข้า network coolify ที่มีอยู่แล้ว
+    external: true
