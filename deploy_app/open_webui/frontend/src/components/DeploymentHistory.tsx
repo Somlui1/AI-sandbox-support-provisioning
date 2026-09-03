@@ -14,6 +14,7 @@ import {
   Loader2
 } from "lucide-react";
 import { ProvisioningJob } from "../types";
+import { API_BASE } from "../api/client";
 
 interface DeploymentHistoryProps {
   token: string;
@@ -116,7 +117,7 @@ export default function DeploymentHistory({ token, initialJobUuid }: DeploymentH
     cleanStreamConnections();
     setSelectedJobUuid(uuid);
 
-    const sseUrl = `/api/jobs/${uuid}/stream?token=${encodeURIComponent(token)}`;
+    const sseUrl = `${API_BASE}/api/jobs/${uuid}/stream?token=${encodeURIComponent(token)}`;
     const source = new EventSource(sseUrl);
     eventSourceRef.current = source;
 

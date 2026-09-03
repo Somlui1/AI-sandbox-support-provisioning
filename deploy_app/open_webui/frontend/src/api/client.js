@@ -3,7 +3,9 @@
  * All API calls go through this module with automatic JWT token injection.
  */
 
-const API_BASE = '';  // Proxied via Vite dev server
+export const API_BASE = (typeof window !== 'undefined' && window.location.pathname.startsWith('/sandbox'))
+  ? '/sandbox'
+  : '';
 
 function getToken() {
   return localStorage.getItem('openwebui_admin_token') || '';
