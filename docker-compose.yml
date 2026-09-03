@@ -5,8 +5,8 @@ services:
       dockerfile: Dockerfile
     container_name: provisioning_orchestrator
     restart: unless-stopped
-    ports:
-      - "${HOST_PORT:-8008}:8000"
+    expose:
+      - "8000"
     environment:
       - PORT=8000
       - REDIS_URL=redis://redis:6379/0
