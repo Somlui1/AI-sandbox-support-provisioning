@@ -7,8 +7,6 @@ import secrets
 import string
 from typing import Dict, Any, List, Optional
 
-from InquirerPy import inquirer
-from InquirerPy.base.control import Choice
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
