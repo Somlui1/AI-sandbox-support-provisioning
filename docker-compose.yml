@@ -20,6 +20,12 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.orchestrator-router.rule=Host(`provisioning.10.10.3.111.sslip.io`)"
+      - "traefik.http.routers.orchestrator-router.entrypoints=http"
+      - "traefik.http.services.orchestrator-service.loadbalancer.server.port=8000"
     networks:
       - provisioning_net
       - coolify
