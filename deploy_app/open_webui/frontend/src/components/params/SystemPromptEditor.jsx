@@ -82,12 +82,13 @@ export default function SystemPromptEditor() {
             <button
               type="button"
               onClick={() => setModalOpen(true)}
+              title={viewMode === 'preview' ? 'Preview System Prompt in Fullscreen' : 'Expand System Prompt Editor'}
               className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-800 text-xs font-semibold flex items-center space-x-1 transition cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
               </svg>
-              <span>Expand</span>
+              <span>{viewMode === 'preview' ? 'Expand Preview' : 'Expand'}</span>
             </button>
           </div>
         </div>
@@ -118,7 +119,11 @@ export default function SystemPromptEditor() {
         </div>
       </div>
 
-      <SystemPromptModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      <SystemPromptModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        initialTab={viewMode}
+      />
     </>
   );
 }
