@@ -114,6 +114,24 @@ class OpenWebUIClient:
             print("="*80)
             raise err
 
+    @classmethod
+    def signin(cls, base_url: str, email: str, password: str) -> Dict[str, Any]:
+        """
+        Authenticate user with Open WebUI via POST /api/v1/auths/signin.
+        Returns response dict containing token, token_type, and user details on success.
+        Raises Exception if authentication fails.
+        """
+        url = f"{base_url.rstrip('/')}/api/v1/auths/signin"
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        resp = requests.post(url, headers=headers, json={"email": email, "password": password}, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        try:
+            err_detail = resp.json().get("detail", resp.text)
+        except Exception:
+            err_detail = resp.text
+        raise Exception(f"Open WebUI signin failed (HTTP {resp.status_code}): {err_detail}")
+
     def get_current_user(self) -> Dict[str, Any]:
         """
         Get the current user details.

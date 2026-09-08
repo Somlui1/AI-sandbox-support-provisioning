@@ -168,6 +168,52 @@ class LDAPClient:
             print(f"[WARNING] LDAP get_user_by_username error: {e}")
         return None
 
+    def authenticate(self, username: str, password: str) -> tuple[bool, Optional[Dict[str, Any]], str]:
+        """
+        Authenticate employee credentials directly against Active Directory LDAP.
+        Returns (success, user_dict, message).
+        """
+        if not HAS_LDAP3:
+            return False, None, "ldap3 library is not installed on server."
+        if not self.is_configured():
+            return False, None, "LDAP server is not configured."
+        if not username or not password:
+            return False, None, "Username and password are required."
+
+        clean_user = username.strip().lower()
+        if "@" in clean_user:
+            clean_user = clean_user.split("@")[0]
+
+        domain = self.domain or "aapico.com"
+        user_bind_dn = f"{clean_user}@{domain}"
+
+        try:
+            server = Server(self.host, port=self.port, get_info=None, connect_timeout=2.0)
+            conn = Connection(server, user=user_bind_dn, password=password, receive_timeout=5)
+            if not conn.bind():
+                return False, None, "Invalid Active Directory username or password."
+            conn.unbind()
+        except Exception as bind_err:
+            return False, None, f"Active Directory connection error: {str(bind_err)}"
+
+        user_info = None
+        try:
+            user_info = self.get_user_by_username(clean_user)
+        except Exception:
+            pass
+
+        if not user_info:
+            user_info = {
+                "username": clean_user,
+                "fullName": clean_user.replace(".", " ").title(),
+                "email": f"{clean_user}@{domain}".lower(),
+                "department": "",
+                "employeeId": "",
+                "approver": "",
+            }
+
+        return True, user_info, "Authentication successful."
+
 
 def sync_ldap_user_to_openwebui(
     ldap_user: Dict[str, Any],

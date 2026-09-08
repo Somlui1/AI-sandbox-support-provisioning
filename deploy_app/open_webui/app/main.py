@@ -134,44 +134,141 @@ async def email_preview_page(request):
     return HTMLResponse("<h1>Email template not found</h1>", status_code=404)
 
 
-async def validate_auth_api(request):
-    """Authenticate and verify the Open WebUI token via GET or POST."""
+async def login_api(request):
+    """
+    Authenticate user using either:
+    1. Username / Email & Password (via Open WebUI sign-in with Active Directory LDAP fallback)
+    2. Quick Server Admin connect (if requested or blank token with server credentials)
+    3. Direct JWT token
+    """
     try:
-        token = None
-        auth_header = request.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            token = auth_header.split(" ")[1].strip()
-            
-        if not token:
-            token = request.query_params.get("token")
-            
-        if not token and request.method == "POST":
+        body = {}
+        if request.method == "POST":
             try:
                 body = await request.json()
-                token = body.get("token")
             except Exception:
                 pass
 
+        token = body.get("token") or request.headers.get("Authorization", "").replace("Bearer ", "").strip()
         if not token:
-            token = OPENWEBUI_ADMIN_TOKEN
+            token = request.query_params.get("token", "").strip()
 
+        username = (body.get("username") or body.get("email") or "").strip()
+        password = body.get("password") or ""
+        quick_admin = body.get("quick_admin") or False
+
+        domain = LDAP_DOMAIN or "aapico.com"
+
+        # Case 1: Quick Admin Connect (Explicit Server Admin Login)
+        if quick_admin:
+            if not OPENWEBUI_ADMIN_TOKEN:
+                return JSONResponse({"status": "invalid", "detail": "Server admin token is not configured in .env"}, status_code=400)
+            client = OpenWebUIClient(OPENWEBUI_BASE_URL, OPENWEBUI_ADMIN_TOKEN)
+            user = client.get_current_user()
+            if user:
+                return JSONResponse({"status": "valid", "user": user, "token": OPENWEBUI_ADMIN_TOKEN, "auth_method": "server_admin"})
+            return JSONResponse({"status": "invalid", "detail": "Configured server admin token is invalid or expired"}, status_code=401)
+
+        # Case 2: Username / Email and Password Provided
+        if username or password:
+            if not username or not password:
+                return JSONResponse({"status": "invalid", "detail": "Both username and password are required."}, status_code=400)
+
+            clean_user = username.lower()
+            emails_to_try = [username]
+            if "@" not in clean_user:
+                emails_to_try = [f"{clean_user}@{domain}", clean_user]
+            elif clean_user.endswith(f"@{domain}"):
+                emails_to_try = [clean_user, clean_user.split("@")[0]]
+
+            # Strategy 1: Open WebUI Native Signin (/api/v1/auths/signin)
+            for try_email in emails_to_try:
+                try:
+                    signin_res = OpenWebUIClient.signin(OPENWEBUI_BASE_URL, try_email, password)
+                    jwt_token = signin_res.get("token")
+                    if jwt_token:
+                        # Verify user profile
+                        temp_client = OpenWebUIClient(OPENWEBUI_BASE_URL, jwt_token)
+                        owu_user = temp_client.get_current_user()
+                        user_profile = owu_user or {
+                            "id": signin_res.get("id"),
+                            "name": signin_res.get("name") or try_email,
+                            "email": signin_res.get("email") or try_email,
+                            "role": signin_res.get("role", "user")
+                        }
+                        return JSONResponse({
+                            "status": "valid",
+                            "user": user_profile,
+                            "token": jwt_token,
+                            "auth_method": "openwebui"
+                        })
+                except Exception as err:
+                    pass
+
+            # Strategy 2: Active Directory LDAP Fallback
+            ldap_client = LDAPClient()
+            if ldap_client.is_configured():
+                try:
+                    ldap_ok, ldap_info, ldap_msg = ldap_client.authenticate(username, password)
+                    if ldap_ok and ldap_info:
+                        user_email = ldap_info.get("email") or f"{clean_user}@{domain}".lower()
+                        
+                        # Look up user in Open WebUI using server admin client
+                        admin_client = OpenWebUIClient(OPENWEBUI_BASE_URL, OPENWEBUI_ADMIN_TOKEN) if OPENWEBUI_ADMIN_TOKEN else None
+                        owu_role = "user"
+                        owu_matched = None
+                        if admin_client:
+                            try:
+                                all_users = admin_client.get_users()
+                                for u in all_users:
+                                    if (u.get("email") or "").lower() == user_email.lower() or (u.get("username") or "").lower() == clean_user:
+                                        owu_matched = u
+                                        owu_role = u.get("role", "user")
+                                        break
+                            except Exception:
+                                pass
+
+                        resolved_token = OPENWEBUI_ADMIN_TOKEN or f"ldap-token-{clean_user}"
+                        session_user = {
+                            "id": (owu_matched and owu_matched.get("id")) or clean_user,
+                            "name": ldap_info.get("fullName") or clean_user,
+                            "email": user_email,
+                            "role": owu_role,
+                            "department": ldap_info.get("department", ""),
+                            "employeeId": ldap_info.get("employeeId", "")
+                        }
+                        return JSONResponse({
+                            "status": "valid",
+                            "user": session_user,
+                            "token": resolved_token,
+                            "auth_method": "ldap"
+                        })
+                except Exception as ldap_err:
+                    print(f"[AUTH] LDAP fallback notice: {ldap_err}")
+
+            return JSONResponse({
+                "status": "invalid",
+                "detail": "Invalid username or password. Please check your credentials."
+            }, status_code=401)
+
+        # Case 3: Token Validation (Direct Token)
         if not token:
-            return JSONResponse({"status": "invalid", "detail": "Token is required"}, status_code=400)
+            return JSONResponse({"status": "invalid", "detail": "Username/Password or Token is required."}, status_code=400)
 
         temp_client = OpenWebUIClient(OPENWEBUI_BASE_URL, token)
         user = temp_client.get_current_user()
-
         if user:
-            return JSONResponse({"status": "valid", "user": user, "token": token})
+            return JSONResponse({"status": "valid", "user": user, "token": token, "auth_method": "token"})
         else:
-            return JSONResponse({"status": "invalid", "detail": "Invalid session token"}, status_code=401)
+            return JSONResponse({"status": "invalid", "detail": "Invalid or expired session token."}, status_code=401)
+
     except Exception as e:
         return JSONResponse({"status": "invalid", "detail": f"Authentication failed: {str(e)}"}, status_code=401)
 
 
-async def login_api(request):
-    """Authenticate and verify the Open WebUI token."""
-    return await validate_auth_api(request)
+async def validate_auth_api(request):
+    """Authenticate and verify the session token or credentials."""
+    return await login_api(request)
 
 
 async def get_ldap_health(request):
@@ -1108,6 +1205,7 @@ routes = [
     Route("/request", request_form_page),
     Route("/email-preview", email_preview_page, methods=["GET"]),
     Route("/api/login", login_api, methods=["GET", "POST"]),
+    Route("/api/auth/login", login_api, methods=["POST"]),
     Route("/api/auth/validate", validate_auth_api, methods=["GET", "POST"]),
     Route("/api/auth/ldap-login", ldap_login_api, methods=["POST"]),
     Route("/api/users", get_users, methods=["GET"]),

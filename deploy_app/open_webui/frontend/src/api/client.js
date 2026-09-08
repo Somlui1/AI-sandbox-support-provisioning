@@ -55,6 +55,26 @@ export async function validateAuth(token) {
   return { ok: res.ok, data };
 }
 
+export async function loginWithCredentials(username, password) {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  const data = await res.json().catch(() => null);
+  return { ok: res.ok, status: res.status, data };
+}
+
+export async function loginWithServerAdmin() {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ quick_admin: true }),
+  });
+  const data = await res.json().catch(() => null);
+  return { ok: res.ok, status: res.status, data };
+}
+
 // ── LDAP ────────────────────────────────────────────────────────────────────
 
 export async function getLdapHealth() {
