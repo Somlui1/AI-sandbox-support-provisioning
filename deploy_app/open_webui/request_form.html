@@ -54,10 +54,22 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Editable user-info inputs: force dark bg + white text (override browser defaults) */
+        #fieldEmployeeId,
+        #fieldDepartment,
+        #fieldApprover,
+        #fieldFullName,
+        #fieldEmail {
+            background-color: rgba(31, 41, 55, 0.8) !important;
+            border-color: rgba(55, 65, 81, 0.8) !important;
+            color: #ffffff !important;
+        }
+
+        /* Disabled state: slightly muted text */
         .input-disabled {
             background-color: rgba(17, 24, 39, 0.6) !important;
             border-color: #374151 !important;
-            color: #9ca3af !important;
+            color: #d1d5db !important;
             cursor: not-allowed !important;
         }
 
