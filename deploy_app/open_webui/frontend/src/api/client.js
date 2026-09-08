@@ -10,10 +10,7 @@ export function getApiBase() {
     if (typeof injected === 'string' && injected.trim() !== '') {
       return injected.trim().replace(/\/+$/, '');
     }
-    // 2. Auto-detect from URL pathname if under a subpath like /sandbox
-    if (window.location.pathname.startsWith('/sandbox')) {
-      return '/sandbox';
-    }
+    // 2. Auto-detect from URL pathname if under a subpath like /sandbox (disabled: default to root /)
   }
   return '';
 }

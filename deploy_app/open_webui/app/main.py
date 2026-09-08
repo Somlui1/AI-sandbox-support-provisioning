@@ -61,8 +61,8 @@ def get_client(request) -> OpenWebUIClient:
 REACT_DIST_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
 
 # Base API / App Subpath (configurable via .env or directly here)
-# Example: APP_BASE_PATH = "/sandbox" (for http://aiva.aapico.com/sandbox) or "" (default root)
-APP_BASE_PATH = os.environ.get("APP_BASE_PATH", os.environ.get("BASE_API", "/sandbox")).strip().rstrip("/")
+# Example: APP_BASE_PATH = "" (default root /) or "/sandbox" (for subpath reverse proxy)
+APP_BASE_PATH = os.environ.get("APP_BASE_PATH", os.environ.get("BASE_API", "")).strip().rstrip("/")
 
 
 async def homepage(request):
