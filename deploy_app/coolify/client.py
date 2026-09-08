@@ -10,6 +10,8 @@ from typing import Dict, Any, List, Optional
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from InquirerPy import inquirer
+from InquirerPy.base.control import Choice
 
 class CoolifyClient:
     def __init__(self, base_url: str, token: str, verbose: bool = True):
