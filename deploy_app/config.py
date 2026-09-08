@@ -8,9 +8,9 @@ root_dir = os.path.abspath(os.path.join(base_dir, ".."))
 root_env = os.path.join(root_dir, ".env")
 
 if os.path.exists(root_env):
-    load_dotenv(root_env, override=True)
+    load_dotenv(root_env, override=False)
 else:
-    load_dotenv(override=True)
+    load_dotenv(override=False)
 
 # API Configuration
 COOLIFY_API_URL = os.getenv("COOLIFY_API_URL", "http://10.10.3.111:8000/api/v1").rstrip('/')

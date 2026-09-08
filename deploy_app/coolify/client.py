@@ -101,8 +101,8 @@ class CoolifyClient:
                 err_detail = response.text
             if self.verbose:
                 print(f"BODY (ERROR):\n{err_detail}")
-                print("="*80)
-            raise Exception(f"HTTP error occurred: {http_err} - Details: {err_detail}")
+            token_hint = f"{self.token[:6]}...{self.token[-4:]}" if self.token and len(self.token) > 10 else "N/A"
+            raise Exception(f"HTTP error occurred: {http_err} - Details: {err_detail} [Target: {url}, Token: {token_hint}]")
         except Exception as err:
             if self.verbose:
                 print(f"ERROR: {err}")

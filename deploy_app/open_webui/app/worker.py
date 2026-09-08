@@ -119,8 +119,8 @@ class JobWorker:
         self.redis_client = get_redis_client()
         # Instantiate clients with verbose logging off to avoid cluttering worker output
         self.coolify = CoolifyClient(COOLIFY_API_URL, COOLIFY_API_TOKEN, verbose=False)
-        self.openwebui = OpenWebUIClient(OPENWEBUI_BASE_URL, OPENWEBUI_ADMIN_TOKEN)
-        print("Worker initialized. Listening for jobs...")
+        token_preview = f"{COOLIFY_API_TOKEN[:6]}...{COOLIFY_API_TOKEN[-4:]}" if COOLIFY_API_TOKEN and len(COOLIFY_API_TOKEN) > 10 else "None"
+        print(f"Worker initialized. Target Coolify: {COOLIFY_API_URL} (Token: {token_preview}). Listening for jobs...")
 
     def publish_progress(self, job_uuid: str, step_name: str, status: str, detail: Optional[str] = None):
         """Update job steps in SQLite database, print structured console log, and publish to Redis Pub/Sub."""
