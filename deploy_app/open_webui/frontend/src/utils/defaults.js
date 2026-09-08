@@ -20,7 +20,7 @@ export const DEFAULT_TEMPLATE_CONFIG = {
     default_template_file: "pocketbase_agent.json",
     system_prompt_file: "system_prompt.md",
     agent_name_pattern: "PocketBase Agent - {username}",
-    base_model_id: "deepseek-v4-flash",
+    base_model_id: "Qwen",
     tool_ids: ["pocketbase"],
     system_prompt: "You are a PocketBase automation expert. You have direct access to tools for querying, creating, and updating database collections and records for the target user.",
     default_permission: "read_write"

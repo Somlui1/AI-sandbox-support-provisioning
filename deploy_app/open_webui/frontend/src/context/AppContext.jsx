@@ -36,7 +36,7 @@ export function AppProvider({ children }) {
   const [pbAdminPassword, setPbAdminPassword] = useState('');
   const [agentTemplate, setAgentTemplate] = useState('pocketbase_agent.json');
   const [agentName, setAgentName] = useState('');
-  const [agentBaseModel, setAgentBaseModel] = useState('deepseek-v4-flash');
+  const [agentBaseModel, setAgentBaseModel] = useState('Qwen');
   const [agentToolIds, setAgentToolIds] = useState('pocketbase');
   const [agentSystemPrompt, setAgentSystemPrompt] = useState('');
 
@@ -107,6 +107,9 @@ export function AppProvider({ children }) {
         setDefaultTemplateConfig(prev => ({ ...prev, ...res.data }));
         if (res.data?.openwebui?.system_prompt) {
           setAgentSystemPrompt(prev => prev || res.data.openwebui.system_prompt);
+        }
+        if (res.data?.openwebui?.base_model_id) {
+          setAgentBaseModel(res.data.openwebui.base_model_id);
         }
       }
     }).catch(() => {});

@@ -63,7 +63,7 @@ export default function ReviewDossier({ onDeploySuccess }) {
       },
       openwebui: {
         agent_name: agentName || `PocketBase Agent - ${cleanUser}`,
-        base_model_id: agentBaseModel || 'deepseek-v4-flash',
+        base_model_id: agentBaseModel || 'Qwen',
         tool_ids: toolIds,
         system_prompt: finalPrompt,
         custom_grants: customGrants,
@@ -148,7 +148,7 @@ export default function ReviewDossier({ onDeploySuccess }) {
             {agentName || `PocketBase Agent - ${cleanUser}`}
           </div>
           <div className="text-slate-500 dark:text-gray-400 text-[11px] font-mono">
-            Model: {agentBaseModel || 'deepseek-v4-flash'}
+            Model: {agentBaseModel || 'Qwen'}
           </div>
           <div className="text-[11px] text-slate-400 dark:text-gray-500 font-mono">
             Tools: {agentToolIds || 'pocketbase'}

@@ -1,7 +1,7 @@
 {
   "id": "pocketbase-agent-template",
   "name": "PocketBase Assistant Agent",
-  "base_model_id": "deepseek-v4-flash",
+  "base_model_id": "Qwen",
   "meta": {
     "description": "Agent dedicated to PocketBase database tasks",
     "toolIds": [

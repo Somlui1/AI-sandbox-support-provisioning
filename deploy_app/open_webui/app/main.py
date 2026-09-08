@@ -355,7 +355,7 @@ async def get_agent_templates(request):
                                 "file": f,
                                 "id": data.get("id", f),
                                 "name": data.get("name", f),
-                                "base_model_id": data.get("base_model_id", "deepseek-v4-flash"),
+                                "base_model_id": data.get("base_model_id", "Qwen"),
                                 "description": data.get("meta", {}).get("description", ""),
                                 "tool_ids": data.get("meta", {}).get("toolIds", []),
                                 "system_prompt": sys_prompt,
@@ -438,7 +438,7 @@ def load_default_template_data() -> dict:
             "default_template_file": "pocketbase_agent.json",
             "system_prompt_file": "system_prompt.md",
             "agent_name_pattern": "PocketBase Agent - {username}",
-            "base_model_id": "deepseek-v4-flash",
+            "base_model_id": "Qwen",
             "tool_ids": ["pocketbase"],
             "system_prompt": "You are a PocketBase automation expert. You have direct access to tools for querying, creating, and updating database collections and records for the target user.",
             "default_permission": "read_write"
@@ -962,7 +962,7 @@ async def deploy_sandbox_request(request):
         "openwebui": {
             "template_name": "pocketbase_agent.json",
             "agent_name": agent_name,
-            "base_model_id": "deepseek-v4-flash",
+            "base_model_id": load_default_template_data().get("openwebui", {}).get("base_model_id", "Qwen"),
             "tool_ids": ["pocketbase"]
         }
     }

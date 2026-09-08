@@ -80,7 +80,7 @@ export default function AgentConfig() {
               onChange={(e) => setAgentBaseModel(e.target.value)}
             >
               {availableModels.length === 0 ? (
-                <option value="deepseek-v4-flash">deepseek-v4-flash (Default)</option>
+                <option value={agentBaseModel || "Qwen"}>{agentBaseModel || "Qwen"} (Default)</option>
               ) : (
                 availableModels.map((m) => (
                   <option key={m.id} value={m.id}>

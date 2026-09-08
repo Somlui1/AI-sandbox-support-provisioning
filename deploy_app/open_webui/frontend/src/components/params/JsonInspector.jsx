@@ -44,7 +44,7 @@ export default function JsonInspector() {
     },
     openwebui_agent: {
       name: agentName || `PocketBase Agent - ${username}`,
-      base_model_id: agentBaseModel || 'deepseek-v4-flash',
+      base_model_id: agentBaseModel || 'Qwen',
       tool_ids: toolIds,
       grants_count: 2 + customGrants.length,
       system_prompt_length: finalPrompt.length,
