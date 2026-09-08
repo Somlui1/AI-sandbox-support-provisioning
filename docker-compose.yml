@@ -21,9 +21,10 @@ services:
       - ./deploy_app/open_webui/app/settings.py:/app/deploy_app/open_webui/app/settings.py:ro
       - ./deploy_app/open_webui/app/main.py:/app/deploy_app/open_webui/app/main.py:ro
       - ./deploy_app/coolify/client.py:/app/deploy_app/coolify/client.py:ro
-      # Mount standalone HTML templates
+      # Mount standalone HTML and Prompt templates
       - ./deploy_app/open_webui/request_form.html:/app/deploy_app/open_webui/request_form.html:ro
       - ./deploy_app/open_webui/email_approval_template.html:/app/deploy_app/open_webui/email_approval_template.html:ro
+      - ./deploy_app/open_webui/app/templates:/app/deploy_app/open_webui/app/templates:ro
     depends_on:
       redis:
         condition: service_healthy

@@ -380,8 +380,14 @@ class JobWorker:
             sys_prompt = owu_config.get("system_prompt") or job_data.get("system_prompt")
             sys_prompt_file = owu_config.get("system_prompt_file") or job_data.get("system_prompt_file") or "system_prompt.md"
 
-            if not sys_prompt and sys_prompt_file:
-                sys_prompt = load_system_prompt_template(sys_prompt_file)
+            # Always load full template from system_prompt.md if available
+            if sys_prompt_file:
+                template_content = load_system_prompt_template(sys_prompt_file)
+                if template_content:
+                    # If no prompt was provided, or if it was the short generic stub, use full template
+                    if not sys_prompt or "You are a PocketBase automation expert" in sys_prompt or len(sys_prompt.strip()) < 200:
+                        sys_prompt = template_content
+                        print(f"[WORKER] Successfully loaded full system prompt from '{sys_prompt_file}' ({len(sys_prompt.splitlines())} lines)")
 
             if not sys_prompt:
                 sys_prompt = agent_data.get("params", {}).get("system", "")

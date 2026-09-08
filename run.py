@@ -66,8 +66,11 @@ def main():
     print(f"{GREEN}        PROVISIONING SYSTEM ORCHESTRATOR - STARTUP ENGINE{RESET}")
     print("=" * 70)
     print(f" Python Interpreter: {venv_python}")
+    prompt_template = os.path.join(base_dir, "deploy_app", "open_webui", "app", "templates", "system_prompt.md")
+    prompt_status = "Available" if os.path.exists(prompt_template) else "Missing"
     print(f" Web Server Script : {main_script}")
     print(f" Worker Script     : {worker_script}")
+    print(f" System Prompt File: {prompt_template} [{prompt_status}]")
     print("=" * 70, flush=True)
 
     # Automatically ensure port 8000 is clean before starting
