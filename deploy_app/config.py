@@ -13,7 +13,7 @@ else:
     load_dotenv(override=True)
 
 # API Configuration
-COOLIFY_API_URL = os.getenv("COOLIFY_API_URL", "http://10.10.3.222:8000/api/v1").rstrip('/')
+COOLIFY_API_URL = os.getenv("COOLIFY_API_URL", "http://10.10.3.111:8000/api/v1").rstrip('/')
 COOLIFY_API_TOKEN = os.getenv("COOLIFY_API_TOKEN")
 
 # Target Deployment configuration
